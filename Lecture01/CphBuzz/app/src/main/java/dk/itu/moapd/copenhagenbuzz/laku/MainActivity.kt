@@ -1,58 +1,126 @@
 package dk.itu.moapd.copenhagenbuzz.laku
 
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
+import android.util.Log
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.EditText
+import androidx.core.view.WindowCompat
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import android.view.Menu
-import android.view.MenuItem
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.ActivityMainBinding
+import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
 
+    // A set of private constants used in this class.
+    companion object {
+        private val TAG = MainActivity::class.qualifiedName
+    }
+
+    // GUI variables
+    private lateinit var eventName: EditText
+    private lateinit var eventLocation: EditText
+    private lateinit var eventDate: EditText
+    private lateinit var eventType: AutoCompleteTextView
+    private lateinit var eventDescription: EditText
+    private lateinit var addEventButton: FloatingActionButton
+
+    // An instance of the 'Event' class.
+    private val event: Event = Event("","", "", "", "")
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        WindowCompat.setDecorFitsSystemWindows(window,false)
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.toolbar)
+        // Link the UI components with the Kotlin source-code
+        eventName        = findViewById(R.id.edit_text_event_name)
+        eventLocation    = findViewById(R.id.edit_text_event_location)
+        eventDate        = findViewById(R.id.edit_text_event_date)
+        eventType        = findViewById(R.id.auto_complete_event_types)
+        eventDescription = findViewById(R.id.edit_text_event_description)
+        addEventButton   = findViewById(R.id.fab_add_event)
 
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        appBarConfiguration = AppBarConfiguration(navController.graph)
-        setupActionBarWithNavController(navController, appBarConfiguration)
 
-        binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+        val eventTypes = resources.getStringArray(R.array.event_types)
+        val arrayAdapter = ArrayAdapter(this, R.layout.event_type_dropdown, eventTypes)
+        eventType.setAdapter(arrayAdapter)
+
+        eventDate.setOnClickListener {
+            val datePicker =
+                MaterialDatePicker.Builder.dateRangePicker()
+                    .setTitleText("Select dates")
+                    .build()
+
+            datePicker.show(supportFragmentManager, "tag")
+
+            datePicker.addOnPositiveButtonClickListener { selection ->
+                val dateFormat = SimpleDateFormat("EEE, MMM dd yyyy", Locale.ENGLISH)
+                val startDate = dateFormat.format(Date(selection.first))
+                val endDate = dateFormat.format(Date(selection.second))
+                val combinedString = "$startDate - $endDate"
+                eventDate.setText(combinedString)
+            }
         }
-    }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
+        // Listener for user interaction in the 'Add Event' button
+        addEventButton.setOnClickListener {
+            // Only execute the following code when the user fills all 'EditText'
+            if(eventName.text.toString().isNotEmpty() &&
+                eventLocation.text.toString().isNotEmpty()) {
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
+                // Update the object attributes
+                event.setEventName(
+                    eventName.text.toString().trim()
+                )
+                event.setEventLocation(
+                    eventLocation.text.toString().trim()
+                )
+                event.setEventDate(
+                    eventDate.text.toString().trim()
+                )
+
+                event.setEventType(
+                    eventType.text.toString().trim()
+                )
+
+                event.setEventDescription(
+                    eventDescription.text.toString().trim()
+                )
+
+                // Write in the 'Logcat' system
+                showMessage()
+            }
         }
+
+        setContentView(binding.root)
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        return navController.navigateUp(appBarConfiguration)
-                || super.onSupportNavigateUp()
+    private fun showMessage() {
+        Log.d(TAG, event.toString())
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
