@@ -9,7 +9,6 @@ import androidx.core.view.WindowCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.ActivityMainBinding
 import java.util.Date
 import java.text.SimpleDateFormat

@@ -5,9 +5,7 @@
     <string name="event_date">Event date</string>
     <string name="event_type">Event type</string>
     <string name="event_description">Event description</string>
-    <string name="add_new">Add new event</string>
     <string name="fab_plus">add new event button</string>
-    <string name="event_type_dropdown">event type dropdown picker</string>
     <string-array name="event_types">
         <item>Birthday</item>
         <item>Wedding</item>

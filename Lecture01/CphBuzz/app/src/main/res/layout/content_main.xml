@@ -100,7 +100,6 @@
         android:layout_marginEnd="@dimen/margin_medium"
         android:layout_marginStart="@dimen/margin_medium"
         android:layout_marginTop="@dimen/margin_standard"
-        android:hint="@string/event_type"
         app:startIconDrawable="@drawable/baseline_celebration_24"
         app:startIconContentDescription="Event icon"
         app:layout_constraintStart_toStartOf="parent"
@@ -111,7 +110,8 @@
             android:id="@+id/auto_complete_event_types"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="none"/>
+            android:inputType="none"
+            android:hint="@string/event_type"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 

@@ -1,21 +1,13 @@
 package dk.itu.moapd.copenhagenbuzz.laku
 
-class Event {
-
-    private var eventName: String
-    private var eventLocation: String
-    private var eventDate: String
-    private var eventType: String
+class Event(
+    private var eventName: String,
+    private var eventLocation: String,
+    private var eventDate: String,
+    private var eventType: String,
     private var eventDescription: String
+) {
 
-
-    constructor (eventName: String, eventLocation: String, eventDate: String, eventType: String, eventDescription: String) {
-        this.eventName = eventName
-        this.eventLocation = eventLocation
-        this.eventDate = eventDate
-        this.eventType = eventType
-        this.eventDescription = eventDescription
-    }
 
     fun getEventName(): String {
         return eventName
