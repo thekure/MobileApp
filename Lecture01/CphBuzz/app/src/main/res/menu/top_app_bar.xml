@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/accounts_button"
+        android:icon="@drawable/baseline_account_circle_24"
+        android:title="@string/account_circle"
+        android:contentDescription="@string/account_circle"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/logout_button"
+        android:icon="@drawable/baseline_logout_wrong"
+        android:title="@string/log_out_button"
+        android:contentDescription="@string/log_out_button"
+        app:showAsAction="ifRoom" />
+
+</menu>

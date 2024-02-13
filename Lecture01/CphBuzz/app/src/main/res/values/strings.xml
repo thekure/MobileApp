@@ -6,9 +6,18 @@
     <string name="event_type">Event type</string>
     <string name="event_description">Event description</string>
     <string name="fab_plus">add new event button</string>
+    <string name="date_range">%1$s - %2$a</string>
+    <string name="guest">Guest</string>
+    <string name="login">Login</string>
+    <string name="account_circle">account_circle</string>
+    <string name="log_out_button">log out button</string>
     <string-array name="event_types">
         <item>Birthday</item>
         <item>Wedding</item>
         <item>Conference</item>
     </string-array>
+    <plurals name="event_days">
+        <item quantity="one">%d day.</item>
+        <item quantity="other">%d days.</item>
+    </plurals>
 </resources>

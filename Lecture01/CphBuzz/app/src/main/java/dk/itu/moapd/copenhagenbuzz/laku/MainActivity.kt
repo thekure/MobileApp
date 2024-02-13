@@ -25,7 +25,9 @@
 
 package dk.itu.moapd.copenhagenbuzz.laku
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -40,8 +42,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 /**
- * An activity class with methods to manage the main activity of the life cycle of the application.
- * - This text was written by Fabricio Narcizo
+ * An activity class with methods to manage the main activity of the application.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -90,12 +91,22 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.topAppBar)
 
         eventTypeSetup()
         setListeners()
 
-        setContentView(binding.root)
     }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.top_app_bar, menu)
+        menu.findItem(R.id.accounts_button).isVisible =
+        !intent.getBooleanExtra("isLoggedIn", false)
+        menu.findItem(R.id.logout_button).isVisible =
+        intent.getBooleanExtra("isLoggedIn", false)
+        return true
+    }
+
 
     /**
      * Sets up the user interface components by attaching relevant listeners to the
@@ -111,6 +122,28 @@ class MainActivity : AppCompatActivity() {
 
             fabAddEvent.setOnClickListener {
                 handleAddEventAction(it)
+            }
+        }
+
+        with(binding.topAppBar){
+            setOnMenuItemClickListener{menuItem ->
+                when (menuItem.itemId) {
+                    R.id.accounts_button -> {
+                        val intent = Intent(this@MainActivity, LoginActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                        true
+                    }
+
+                    R.id.logout_button -> {
+                        val intent = Intent(this@MainActivity, LoginActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                        true
+                    }
+
+                    else -> false
+                }
             }
         }
     }
@@ -133,10 +166,19 @@ class MainActivity : AppCompatActivity() {
         datePicker.show(supportFragmentManager, "tag")
 
         datePicker.addOnPositiveButtonClickListener { selection ->
+            /**
+             * Defines the wanted display format for the dates.
+             * Currently set to: EEE, MMM dd yyyy.
+             */
             val dateFormat = SimpleDateFormat("EEE, MMM dd yyyy", Locale.ENGLISH)
             val startDate = dateFormat.format(Date(selection.first))
             val endDate = dateFormat.format(Date(selection.second))
-            val combinedString = "$startDate - $endDate"
+
+            /**
+             * Uses start- and end dates to generate a single range string, using the date
+             * range resource, which takes 2 parameters.
+             */
+            val combinedString = String.format(getString(R.string.date_range), startDate, endDate) //"@strings/date_range" //""$startDate - $endDate"
             with(binding.contentMain.editTextEventDate){
                 if(startDate == endDate){
                     setText(startDate)
