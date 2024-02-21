@@ -34,7 +34,6 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.core.view.WindowCompat
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -105,6 +104,9 @@ class MainActivity : AppCompatActivity() {
         setListeners()
     }
 
+    /**
+     * Inflates top_app_bar and decides whether or not to show login or logout button.
+     */
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.top_app_bar, menu)
         menu.findItem(R.id.accounts_button).isVisible =
@@ -155,6 +157,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * - Defines a NavHostFragment
+     * - Uses that to instantiate a NavController
+     * - Uses that to set up bottom_navigation_menu
+     * - Makes sure the top_app_bar is configured with the NavController
+     */
     private fun initNavMenuAndTopBar() {
         val navHostFragment = supportFragmentManager
             .findFragmentById(
