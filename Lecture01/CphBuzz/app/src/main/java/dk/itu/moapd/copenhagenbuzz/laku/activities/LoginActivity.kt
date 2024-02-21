@@ -23,11 +23,12 @@
  *
  */
 
-package dk.itu.moapd.copenhagenbuzz.laku
+package dk.itu.moapd.copenhagenbuzz.laku.activities
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import dk.itu.moapd.copenhagenbuzz.laku.activities.MainActivity
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.ActivityLoginBinding
 
 /**
@@ -40,6 +41,14 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setListeners()
+    }
+
+    /**
+     * Configures listeners for Login and Guest buttons.
+     * - Passes intent (boolean, isLoggedIn)
+     */
+    private fun setListeners(){
         with(binding.contentLogin){
             buttonLogin.setOnClickListener {
                 val intent = Intent(this@LoginActivity, MainActivity::class.java).apply {

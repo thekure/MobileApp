@@ -12,7 +12,7 @@
     <item
         android:id="@+id/fragment_favorites"
         android:enabled="true"
-        android:icon="@drawable/baseline_logout_wrong"
+        android:icon="@drawable/baseline_favorite_24"
         android:title="@string/fragment_favorites"/>
 
     <item
@@ -20,5 +20,11 @@
         android:enabled="true"
         android:icon="@drawable/baseline_logout_wrong"
         android:title="@string/fragment_maps"/>
+
+    <item
+        android:id="@+id/fragment_event_create"
+        android:enabled="true"
+        android:icon="@drawable/baseline_add_24"
+        android:title="@string/create_event"/>
 
 </menu>

@@ -23,15 +23,12 @@
  *
  */
 
-package dk.itu.moapd.copenhagenbuzz.laku
+package dk.itu.moapd.copenhagenbuzz.laku.activities
 
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
-import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.core.view.WindowCompat
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -40,12 +37,8 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.snackbar.Snackbar
+import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.ActivityMainBinding
-import java.util.Date
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 /**
  * An activity class with methods to manage the main activity of the application.
@@ -70,8 +63,6 @@ class MainActivity : AppCompatActivity() {
         private val TAG = MainActivity::class.qualifiedName
     }
 
-    // An instance of the 'Event' class.
-    private lateinit var event: Event
 
     /**
      * Called when the activity is starting. This is where most initialization should go: calling
@@ -100,7 +91,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         initNavMenuAndTopBar()
-        eventTypeSetup()
         setListeners()
     }
 
@@ -119,21 +109,9 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Sets up the user interface components by attaching relevant listeners to the
-     * necessary components. These listeners have dedicated handler functions.
+     * necessary components.
      */
     private fun setListeners() {
-        with(binding.contentMain) {
-            editTextEventDate.setOnFocusChangeListener { _, hasFocus ->
-                if (hasFocus){
-                    handleDatePickerAction()
-                }
-            }
-
-            fabAddEvent.setOnClickListener {
-                handleAddEventAction(it)
-            }
-        }
-
         with(binding.topAppBar){
             setOnMenuItemClickListener{menuItem ->
                 when (menuItem.itemId) {
@@ -164,6 +142,7 @@ class MainActivity : AppCompatActivity() {
      * - Makes sure the top_app_bar is configured with the NavController
      */
     private fun initNavMenuAndTopBar() {
+        // Bottom Navigation:
         val navHostFragment = supportFragmentManager
             .findFragmentById(
                 R.id.fragment_container_view
@@ -172,115 +151,11 @@ class MainActivity : AppCompatActivity() {
 
         binding.bottomNavigation.setupWithNavController(navController)
 
-
+        // Top Bar:
         setSupportActionBar(binding.topAppBar)
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
     }
-
-    /**
-     * Handler function for the date picker component.
-     * Instantiates a date range picker, and sets a listener for positive button click in
-     * the picker. User selection generates a pair of dates in utc millisecond format.
-     * - Uses the SimpleDateFormat library to define the intended string format for the UI.
-     * - Converts from utc milliseconds -> date -> string
-     * - Sets the UI text to the date.
-     * - Removes users focus from the component.
-     */
-    private fun handleDatePickerAction(){
-        val datePicker =
-            MaterialDatePicker.Builder.dateRangePicker()
-                .setTitleText("Select dates")
-                .build()
-
-        datePicker.show(supportFragmentManager, "tag")
-
-        datePicker.addOnPositiveButtonClickListener { selection ->
-            /**
-             * Defines the wanted display format for the dates.
-             * Currently set to: EEE, MMM dd yyyy.
-             */
-            val dateFormat = SimpleDateFormat("EEE, MMM dd yyyy", Locale.ENGLISH)
-            val startDate = dateFormat.format(Date(selection.first))
-            val endDate = dateFormat.format(Date(selection.second))
-
-            /**
-             * Uses start- and end dates to generate a single range string, using the date
-             * range resource, which takes 2 parameters.
-             */
-            val combinedString = String.format(getString(R.string.date_range), startDate, endDate) //"@strings/date_range" //""$startDate - $endDate"
-            with(binding.contentMain.editTextEventDate){
-                if(startDate == endDate){
-                    setText(startDate)
-                } else {
-                    setText(combinedString)
-                }
-                clearFocus()
-            }
-        }
-    }
-
-    /**
-     * Sets the correct values for the dropdown component.
-     * Event types are provided as a string array in strings.xml and are defined as enums in
-     * Event.kt. The dropdown component is an AutoCompleteTextView, which has a setAdapter function
-     * to specify the input of the dropdown values.
-     * - Loads string array with the event types.
-     * - Instantiates a correct adapter.
-     * - Updates the component with the new adapter.
-     */
-    private fun eventTypeSetup(){
-        val eventTypes = resources.getStringArray(R.array.event_types)
-        val arrayAdapter = ArrayAdapter(this, R.layout.event_type_dropdown, eventTypes)
-
-        binding.contentMain.autoCompleteEventTypes.setAdapter(arrayAdapter)
-    }
-
-    /**
-     * Handler function for the add event button.
-     * - Creates new event if all fields have content.
-     * - Notifies user with a snack bar
-     * - If fields are filled incorrectly, notifies user with a toast
-     */
-    private fun handleAddEventAction(view: View){
-        with(binding.contentMain) {
-            // Only execute the following code when the user fills all fields
-            if (checkInputValidity()) {
-                event = Event(
-                    editTextEventName.text.toString().trim(),
-                    editTextEventLocation.text.toString().trim(),
-                    editTextEventDate.text.toString().trim(),
-                    enumValueOf(autoCompleteEventTypes.text.toString().uppercase()),
-                    editTextEventDescription.text.toString().trim()
-                )
-
-                // Show snack bar with event data.
-                showMessage(view)
-                hideKeyboard()
-            } else {
-                Toast.makeText(this@MainActivity, "You need to fill out all fields first.", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    /**
-     * Responsible for displaying event creation message on the UI.
-     */
-    private fun showMessage(view: View) {
-        Snackbar.make(view, event.toString(), Snackbar.LENGTH_SHORT).show()
-    }
-
-    /**
-     * Checks that all required fields have content before event creation.
-     */
-    private fun checkInputValidity(): Boolean =
-        with(binding.contentMain){
-                editTextEventName.text.toString().isNotEmpty() &&
-                editTextEventLocation.text.toString().isNotEmpty() &&
-                editTextEventDate.text.toString().isNotEmpty() &&
-                autoCompleteEventTypes.text.toString().isNotEmpty() &&
-                editTextEventDescription.text.toString().isNotEmpty()
-        }
 
     /**
      * Standard function for hiding the keyboard. Imported from java.
