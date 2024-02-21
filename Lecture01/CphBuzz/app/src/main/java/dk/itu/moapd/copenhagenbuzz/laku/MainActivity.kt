@@ -34,6 +34,13 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.core.view.WindowCompat
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.ActivityMainBinding
@@ -54,6 +61,7 @@ class MainActivity : AppCompatActivity() {
      * - This text was written by Fabricio Narcizo
      */
     private lateinit var binding: ActivityMainBinding
+    private lateinit var appBarConfiguration: AppBarConfiguration
 
     /**
      * A set of private constants used in this class.
@@ -91,11 +99,10 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setSupportActionBar(binding.topAppBar)
 
+        initNavMenuAndTopBar()
         eventTypeSetup()
         setListeners()
-
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
@@ -146,6 +153,21 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun initNavMenuAndTopBar() {
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(
+                R.id.fragment_container_view
+            ) as NavHostFragment
+        val navController = navHostFragment.navController
+
+        binding.bottomNavigation.setupWithNavController(navController)
+
+
+        setSupportActionBar(binding.topAppBar)
+        appBarConfiguration = AppBarConfiguration(navController.graph)
+        setupActionBarWithNavController(navController, appBarConfiguration)
     }
 
     /**
@@ -258,6 +280,11 @@ class MainActivity : AppCompatActivity() {
     private fun hideKeyboard(){
         val imm = getSystemService(InputMethodManager::class.java)
         imm?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.fragment_container_view)
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 }
 

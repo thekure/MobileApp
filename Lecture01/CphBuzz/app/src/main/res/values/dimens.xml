@@ -3,4 +3,5 @@
     <dimen name="margin_medium">8dp</dimen>
     <dimen name="margin_standard">16dp</dimen>
     <dimen name="standard_button_width">100dp</dimen>
+    <dimen name="margin_extra_large">32dp</dimen>
 </resources>

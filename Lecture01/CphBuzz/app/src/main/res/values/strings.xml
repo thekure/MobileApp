@@ -20,4 +20,7 @@
         <item quantity="one">%d day.</item>
         <item quantity="other">%d days.</item>
     </plurals>
+    <string name="fragment_timeline">Timeline</string>
+    <string name="fragment_favorites">Favorites</string>
+    <string name="fragment_maps">Maps</string>
 </resources>

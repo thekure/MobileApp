@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/fragment_timeline">
+    <fragment
+        android:id="@+id/fragment_timeline"
+        android:name="dk.itu.moapd.copenhagenbuzz.laku.fragments.TimelineFragment"
+        android:label="@string/fragment_timeline"
+        tools:layout="@layout/fragment_timeline" />
+
+    <fragment
+        android:id="@+id/fragment_favorites"
+        android:name="dk.itu.moapd.copenhagenbuzz.laku.fragments.FavoritesFragment"
+        android:label="@string/fragment_favorites"
+        tools:layout="@layout/fragment_favorites" />
+
+    <fragment
+        android:id="@+id/fragment_maps"
+        android:name="dk.itu.moapd.copenhagenbuzz.laku.fragments.MapsFragment"
+        android:label="@string/fragment_maps"
+        tools:layout="@layout/fragment_maps" />
+</navigation>
