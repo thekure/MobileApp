@@ -4,4 +4,8 @@
     <dimen name="margin_standard">16dp</dimen>
     <dimen name="standard_button_width">100dp</dimen>
     <dimen name="margin_extra_large">32dp</dimen>
+    <dimen name="button_width_standard">88dp</dimen>
+    <dimen name="margin_small">4dp</dimen>
+    <dimen name="button_height_standard">48dp</dimen>
+    <dimen name="margin_large">24dp</dimen>
 </resources>
