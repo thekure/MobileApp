@@ -23,7 +23,7 @@
  *
  */
 
-package dk.itu.moapd.copenhagenbuzz.laku
+package dk.itu.moapd.copenhagenbuzz.laku.models
 
 /**
  * This class denotes the different event types.
