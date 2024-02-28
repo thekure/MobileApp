@@ -24,9 +24,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.github.javafaker.Faker
+import kotlinx.coroutines.launch
+import java.lang.Exception
 
 
-class DataViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
+class DataViewModel(
+    private val savedStateHandle: SavedStateHandle
+) : ViewModel() {
 
     /**
      * A set of private constants used in this class.
@@ -44,15 +50,42 @@ class DataViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
         }
     }
 
-    private fun fetchEvents() {
-        TODO("Not yet implemented")
-    }
-
-
     /**
      * A LiveData object to hold a list of events.
      */
     val events: LiveData<List<Event>>
         get() = _events
 
+    init{
+        fetchEvents()
+    }
+
+    private fun fetchEvents() {
+        viewModelScope.launch {
+            try {
+                val data = generateDummyEvents()
+                _events.value = data
+            } catch (e: Exception){
+                println("Couldn't fetch events: $e")
+            }
+        }
+
+    }
+
+    private fun generateDummyEvents(): List<Event> {
+        // Generate dummy events here
+        val faker = Faker()
+        val eventList = mutableListOf<Event>()
+        repeat(3) {
+            val event = Event(
+                eventName = faker.lorem().word(),
+                eventLocation = faker.address().city(),
+                eventDate = faker.date().toString(),
+                eventType = EventType.WEDDING,
+                eventDescription = faker.lorem().word()
+            )
+            eventList.add(event)
+        }
+        return eventList
+    }
 }

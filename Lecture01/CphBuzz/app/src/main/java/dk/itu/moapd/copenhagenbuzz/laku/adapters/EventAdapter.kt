@@ -7,16 +7,18 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import com.github.javafaker.Faker
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
+import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
-import dk.itu.moapd.copenhagenbuzz.laku.models.EventType
 
-class EventAdapter(private val context: Context, private var resource: Int,
-                   data: List<Event>): BaseAdapter() {
+class EventAdapter(
+    private val context: Context,
+    private var resource: Int,
+    private val dataViewModel: DataViewModel
+): BaseAdapter() {
 
-   private val dummy: List<Event> = generateDummyEvents()
+    private var events: List<Event> = emptyList()
 
     private class ViewHolder(view: View){
         val eventLetter: ImageView = view.findViewById(R.id.item_event_letter)
@@ -28,58 +30,47 @@ class EventAdapter(private val context: Context, private var resource: Int,
         val description: TextView = view.findViewById(R.id.item_event_description)
 
     }
+
+    init {
+        dataViewModel.events.observeForever { events ->
+            this.events = events
+            notifyDataSetChanged() // Notify adapter when dataset changes
+        }
+    }
     override fun getCount(): Int {
-        TODO("Not yet implemented")
+        return events.size
     }
 
     override fun getItem(position: Int): Any {
-        return dummy[position]
+        return events[position]
     }
 
     override fun getItemId(position: Int): Long {
-        TODO("Not yet implemented")
+        return position.toLong()
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val view = convertView ?: LayoutInflater.from(context).inflate(resource, parent, false)
         val viewHolder = (view.tag as? ViewHolder) ?: ViewHolder(view)
 
-        getItem(position)?.let { dummy ->
-            populateViewHolder(viewHolder, dummy as Event)
+        getItem(position)?.let { event ->
+            populateViewHolder(viewHolder, event as Event)
         }
 
         view.tag = viewHolder
         return view
     }
 
-    private fun populateViewHolder(viewHolder: ViewHolder, dummy: Event) {
+    private fun populateViewHolder(viewHolder: ViewHolder, event: Event) {
         with(viewHolder) {
             // Fill out the Material Design card.
             Picasso.get().load("https://picsum.photos/300/200").into(image)
-            title.text = dummy.eventName
-            type.text = dummy.eventType.toString()
-            description.text = dummy.eventDescription
+            title.text = event.eventName
+            type.text = event.eventType.toString()
+            description.text = event.eventDescription
             Picasso.get().load("https://picsum.photos/100/100").into(eventLetter)
-            location.text = dummy.eventLocation
-            date.text = dummy.eventDate
+            location.text = event.eventLocation
+            date.text = event.eventDate
         }
-    }
-
-    // Dummy function to generate a list of events (replace this with your actual data source)
-    private fun generateDummyEvents(): List<Event> {
-        // Generate dummy events here
-        val faker = Faker()
-        val eventList = mutableListOf<Event>()
-        repeat(10) {
-            val event = Event(
-                eventName = faker.lorem().word(),
-                eventLocation = faker.address().city(),
-                eventDate = faker.date().toString(),
-                eventType = EventType.WEDDING,
-                eventDescription = faker.lorem().word()
-            )
-            eventList.add(event)
-        }
-        return eventList
     }
 }
