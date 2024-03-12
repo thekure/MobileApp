@@ -68,7 +68,7 @@ class DataViewModel(
         viewModelScope.launch {
             try {
                 _events.value = generateDummyEvents()
-                // _favorites.value = getFavorites()
+                _favorites.value = getFavorites()
             } catch (e: Exception){
                 println("Couldn't fetch events: $e")
             }
@@ -86,10 +86,18 @@ class DataViewModel(
                 eventLocation = faker.address().city(),
                 eventDate = faker.date().toString(),
                 eventType = EventType.WEDDING,
-                eventDescription = faker.lorem().word()
+                eventDescription = faker.lorem().word(),
+                false
             )
             eventList.add(event)
         }
         return eventList
+    }
+
+    /**
+     * Return a list of favorited events.
+     */
+    private fun getFavorites(): List<Event> {
+        return _events.value?.filter { it.isFavorited } ?: emptyList()
     }
 }

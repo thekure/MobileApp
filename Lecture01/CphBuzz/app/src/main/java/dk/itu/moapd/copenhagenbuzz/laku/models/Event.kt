@@ -43,7 +43,8 @@ data class Event(
     var eventLocation: String,
     var eventDate: String,
     var eventType: EventType,
-    var eventDescription: String
+    var eventDescription: String,
+    var isFavorited: Boolean,
 ) {
 
     /**
