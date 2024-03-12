@@ -14,10 +14,6 @@ class FavoritesFragment : Fragment() {
         get() = requireNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
         }
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
