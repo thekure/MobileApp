@@ -38,23 +38,27 @@ class DataViewModel(
      * A set of private constants used in this class.
      */
     companion object {
-        private const val CONT_KEY = "CONT_KEY"
+        private const val ALL_EVENTS = "ALL_EVENTS"
+        private const val FAVORITE_EVENTS = "FAVORITE_EVENTS"
     }
 
     /**
      * Allows for updates to the data.
      */
     private val _events: MutableLiveData<List<Event>> by lazy {
-        MutableLiveData<List<Event>>().also{
-            fetchEvents()
-        }
+        savedStateHandle.getLiveData(ALL_EVENTS, ArrayList())
     }
+
+    private val _favorites: MutableLiveData<List<Event>> by lazy {
+        savedStateHandle.getLiveData(FAVORITE_EVENTS, ArrayList())
+    }
+
 
     /**
      * A LiveData object to hold a list of events.
      */
-    val events: LiveData<List<Event>>
-        get() = _events
+    val events: LiveData<List<Event>> = _events
+    val favorites: LiveData<List<Event>> = _favorites
 
     init{
         fetchEvents()
@@ -63,8 +67,8 @@ class DataViewModel(
     private fun fetchEvents() {
         viewModelScope.launch {
             try {
-                val data = generateDummyEvents()
-                _events.value = data
+                _events.value = generateDummyEvents()
+                // _favorites.value = getFavorites()
             } catch (e: Exception){
                 println("Couldn't fetch events: $e")
             }
