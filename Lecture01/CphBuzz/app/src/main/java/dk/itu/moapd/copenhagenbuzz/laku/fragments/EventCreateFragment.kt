@@ -136,7 +136,9 @@ class EventCreateFragment : Fragment() {
                     editTextEventLocation.text.toString().trim(),
                     editTextEventDate.text.toString().trim(),
                     enumValueOf(autoCompleteEventTypes.text.toString().uppercase()),
-                    editTextEventDescription.text.toString().trim()
+                    editTextEventDescription.text.toString().trim(),
+                    false,
+                    ""
                 )
 
                 // Show snack bar with event data.

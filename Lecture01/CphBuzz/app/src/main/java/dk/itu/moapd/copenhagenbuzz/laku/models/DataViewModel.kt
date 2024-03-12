@@ -28,6 +28,7 @@ import androidx.lifecycle.viewModelScope
 import com.github.javafaker.Faker
 import kotlinx.coroutines.launch
 import java.lang.Exception
+import kotlin.random.Random
 
 
 class DataViewModel(
@@ -62,6 +63,23 @@ class DataViewModel(
 
     init{
         fetchEvents()
+        // REMOVE THIS CODE WHEN FAVORITES WORK
+        val faker = Faker()
+        val eventList = mutableListOf<Event>()
+        repeat(2) {
+            val number = Random.nextInt(1, 501)
+            val event = Event(
+                eventName = faker.lorem().word(),
+                eventLocation = faker.address().city(),
+                eventDate = faker.date().toString(),
+                eventType = EventType.BIRTHDAY,
+                eventDescription = faker.lorem().word(),
+                isFavorited = true,
+                eventImage = "https://picsum.photos/seed/$number/400/194"
+            )
+            eventList.add(event)
+        }
+        _favorites.value = eventList
     }
 
     private fun fetchEvents() {
@@ -80,14 +98,16 @@ class DataViewModel(
         // Generate dummy events here
         val faker = Faker()
         val eventList = mutableListOf<Event>()
-        repeat(3) {
+        repeat(10) {
+            val number = Random.nextInt(1, 501)
             val event = Event(
                 eventName = faker.lorem().word(),
                 eventLocation = faker.address().city(),
                 eventDate = faker.date().toString(),
                 eventType = EventType.WEDDING,
                 eventDescription = faker.lorem().word(),
-                false
+                isFavorited = false,
+                eventImage = "https://picsum.photos/seed/$number/400/194"
             )
             eventList.add(event)
         }

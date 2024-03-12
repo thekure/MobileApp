@@ -45,6 +45,7 @@ data class Event(
     var eventType: EventType,
     var eventDescription: String,
     var isFavorited: Boolean,
+    var eventImage: String
 ) {
 
     /**

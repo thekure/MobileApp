@@ -11,11 +11,12 @@ import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
+import kotlin.random.Random
 
 class EventAdapter(
     private val context: Context,
     private var resource: Int,
-    private val dataViewModel: DataViewModel
+    private val model: DataViewModel
 ): BaseAdapter() {
 
     private var events: List<Event> = emptyList()
@@ -32,7 +33,7 @@ class EventAdapter(
     }
 
     init {
-        dataViewModel.events.observeForever { events ->
+        model.events.observeForever { events ->
             this.events = events
             notifyDataSetChanged() // Notify adapter when dataset changes
         }
@@ -53,22 +54,21 @@ class EventAdapter(
         val view = convertView ?: LayoutInflater.from(context).inflate(resource, parent, false)
         val viewHolder = (view.tag as? ViewHolder) ?: ViewHolder(view)
 
-        getItem(position)?.let { event ->
-            populateViewHolder(viewHolder, event as Event)
-        }
+        populateViewHolder(viewHolder, getItem(position) as Event)
 
         view.tag = viewHolder
         return view
     }
 
     private fun populateViewHolder(viewHolder: ViewHolder, event: Event) {
+        val number = Random.nextInt(1, 501)
         with(viewHolder) {
             // Fill out the Material Design card.
-            Picasso.get().load("https://picsum.photos/300/200").into(image)
+            Picasso.get().load(event.eventImage).into(image)
             title.text = event.eventName
             type.text = event.eventType.toString()
             description.text = event.eventDescription
-            Picasso.get().load("https://picsum.photos/100/100").into(eventLetter)
+            Picasso.get().load("https://picsum.photos/seed/$number/150/150").into(eventLetter)
             location.text = event.eventLocation
             date.text = event.eventDate
         }

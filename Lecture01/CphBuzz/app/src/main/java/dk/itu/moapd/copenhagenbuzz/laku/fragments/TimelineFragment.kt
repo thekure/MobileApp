@@ -19,7 +19,7 @@ class TimelineFragment : Fragment() {
             "Cannot access binding because it is null. Is the view visible?"
         }
 
-    private val viewModel: DataViewModel by viewModels()
+    private val model: DataViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,13 +31,13 @@ class TimelineFragment : Fragment() {
             false
         ).also {
             _binding = it
-    }.root
+        }.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         // Initialize EventAdapter with DataViewModel
-        val adapter = EventAdapter(requireContext(), R.layout.event_row_item, viewModel)
+        val adapter = EventAdapter(requireContext(), R.layout.event_row_item, model)
 
         // Set adapter to ListView
         binding.listViewTimeline.adapter = adapter
@@ -48,3 +48,16 @@ class TimelineFragment : Fragment() {
         _binding = null
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
