@@ -1,20 +1,16 @@
 package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
-import dk.itu.moapd.copenhagenbuzz.laku.Event
+import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import dk.itu.moapd.copenhagenbuzz.laku.R
-import dk.itu.moapd.copenhagenbuzz.laku.activities.LoginActivity
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.FragmentEventCreateBinding
 import java.text.SimpleDateFormat
 import java.util.Date

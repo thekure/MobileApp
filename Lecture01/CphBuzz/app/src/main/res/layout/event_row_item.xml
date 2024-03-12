@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/item_event_letter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_logout_wrong"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/item_image"
+                app:layout_constraintEnd_toStartOf="@id/item_event_title"
+                app:layout_constraintStart_toStartOf="parent"
+                />
+
+
+            <TextView
+                android:id="@+id/item_event_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_medium"
+                android:layout_marginEnd="@dimen/margin_medium"
+                android:layout_marginStart="@dimen/margin_medium"
+                android:lines="1"
+                android:ellipsize="end"
+                android:textAppearance="?attr/textAppearanceHeadline6"
+                app:layout_constraintEnd_toStartOf="@id/button_favorite"
+                app:layout_constraintStart_toEndOf="@id/item_event_letter"
+                app:layout_constraintBottom_toTopOf="@id/item_image"
+                app:layout_constraintTop_toTopOf="parent"
+                android:text="this is the title"/>
+
+            <TextView
+                android:id="@+id/item_event_type"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_medium"
+                android:layout_marginEnd="@dimen/margin_medium"
+                android:layout_marginStart="@dimen/margin_medium"
+                android:lines="2"
+                android:ellipsize="end"
+                android:textAppearance="?attr/textAppearanceBody2"
+                android:textColor="?android:attr/textColorSecondary"
+                app:layout_constraintEnd_toStartOf="@id/button_favorite"
+                app:layout_constraintStart_toEndOf="@id/item_event_letter"
+                app:layout_constraintTop_toBottomOf="@id/item_event_title"
+                app:layout_constraintBottom_toTopOf="@id/item_image"
+                android:text="this is subtitle"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_favorite"
+                style="?attr/borderlessButtonStyle"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/margin_small"
+                app:icon="@drawable/baseline_favorite_24"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/item_image"
+                app:layout_constraintStart_toEndOf="@id/item_event_title"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <ImageView
+                android:id="@+id/item_image"
+                android:layout_width="match_parent"
+                android:layout_height="194dp"
+                android:background="?colorSurfaceContainerLow"
+                android:contentDescription="this is a description"
+                android:scaleType="centerCrop"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/item_event_type"
+                app:layout_constraintBottom_toTopOf="@id/item_event_location"/>
+
+            <TextView
+                android:id="@+id/item_event_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toTopOf="@id/item_event_date"
+                app:layout_constraintTop_toBottomOf="@id/item_image"
+                android:text="location"/>
+
+            <TextView
+                android:id="@+id/item_event_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/item_event_location"
+                app:layout_constraintBottom_toTopOf="@id/item_event_description"
+                android:text="date"/>
+
+
+
+            <TextView
+                android:id="@+id/item_event_description"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/margin_medium"
+                android:layout_marginStart="@dimen/margin_medium"
+                android:layout_marginTop="@dimen/margin_large"
+                android:lines="4"
+                android:ellipsize="end"
+                android:textAppearance="?attr/textAppearanceBody2"
+                android:textColor="?android:attr/textColorSecondary"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/item_event_date"
+                app:layout_constraintBottom_toTopOf="@id/buttons_constraint"
+                android:text="description"/>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/buttons_constraint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/item_event_description"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_edit"
+                    style="?attr/materialIconButtonFilledStyle"
+                    android:layout_width="@dimen/button_width_standard"
+                    android:layout_height="@dimen/button_height_standard"
+                    android:layout_marginTop="@dimen/margin_small"
+                    android:layout_marginEnd="@dimen/margin_standard"
+                    android:layout_marginBottom="@dimen/margin_small"
+                    android:text="@string/edit"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/button_info"  />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_info"
+                    style="?attr/materialIconButtonFilledStyle"
+                    android:layout_width="@dimen/button_width_standard"
+                    android:layout_height="@dimen/button_height_standard"
+                    android:layout_marginTop="@dimen/margin_small"
+                    android:layout_marginEnd="@dimen/margin_standard"
+                    android:layout_marginBottom="@dimen/margin_small"
+                    android:text="@string/info"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
