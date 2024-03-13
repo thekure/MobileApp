@@ -19,36 +19,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/fave_guideline"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintGuide_percent="0.5" />
-
-            <View
-                android:layout_width="2dp"
-                android:layout_height="20dp"
-                android:background="@android:color/black"
-                app:layout_constraintStart_toEndOf="@+id/fave_event_type"
-                app:layout_constraintEnd_toStartOf="@+id/fave_event_date"
-                app:layout_constraintTop_toBottomOf="@id/fave_event_title"
-                app:layout_constraintBottom_toBottomOf="parent"/>
-
             <TextView
                 android:id="@+id/fave_event_title"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin_small_8"
                 android:layout_marginEnd="@dimen/margin_small_8"
-                android:layout_marginStart="@dimen/margin_small_8"
+                android:layout_marginStart="@dimen/margin_medium_16"
                 android:lines="1"
                 android:ellipsize="end"
                 android:textAppearance="?attr/textAppearanceHeadline6"
-                app:layout_constraintEnd_toStartOf="@+id/fave_guideline"
+                app:layout_constraintEnd_toStartOf="@id/fave_btn_favorite"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/fave_event_type"/>
 
             <TextView
                 android:id="@+id/fave_event_type"
@@ -56,29 +40,17 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin_small_8"
                 android:layout_marginEnd="@dimen/margin_small_8"
-                android:layout_marginStart="@dimen/margin_small_8"
+                android:layout_marginStart="@dimen/margin_medium_16"
+                android:layout_marginBottom="@dimen/margin_medium_16"
                 android:lines="1"
                 android:ellipsize="end"
                 android:textAppearance="?attr/textAppearanceBody2"
                 android:textColor="?android:attr/textColorSecondary"
-                app:layout_constraintEnd_toStartOf="@+id/fave_event_date"
+                app:layout_constraintEnd_toStartOf="@id/fave_btn_favorite"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/fave_event_title" />
+                app:layout_constraintTop_toBottomOf="@+id/fave_event_title"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
-            <TextView
-                android:id="@+id/fave_event_date"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/margin_small_8"
-                android:layout_marginStart="@dimen/margin_small_8"
-                android:layout_marginTop="@dimen/margin_small_8"
-                android:lines="1"
-                android:ellipsize="end"
-                android:textAppearance="?attr/textAppearanceBody2"
-                android:textColor="?android:attr/textColorSecondary"
-                app:layout_constraintEnd_toStartOf="@+id/fave_guideline"
-                app:layout_constraintStart_toEndOf="@+id/fave_event_type"
-                app:layout_constraintTop_toBottomOf="@+id/fave_event_title"/>
 
             <com.google.android.material.button.MaterialButton
                 style="?attr/borderlessButtonStyle"
@@ -91,8 +63,9 @@
                 app:icon="@drawable/baseline_favorite_24"
                 android:contentDescription="@string/event_favorite_button"
                 app:layout_constraintEnd_toStartOf="@+id/fave_event_image"
-                app:layout_constraintStart_toEndOf="@+id/fave_guideline"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintStart_toEndOf="@id/fave_event_title"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
             <ImageView
                 android:id="@+id/fave_event_image"
@@ -101,8 +74,10 @@
                 android:background="?colorSurfaceContainerLow"
                 android:contentDescription="@string/event_image"
                 android:scaleType="centerCrop"
+                app:layout_constraintStart_toEndOf="@id/fave_btn_favorite"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
