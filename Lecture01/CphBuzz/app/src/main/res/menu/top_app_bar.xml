@@ -16,4 +16,15 @@
         android:contentDescription="@string/log_out_button"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/action_user_info"
+        android:orderInCategory="100"
+        android:title="@string/user_info_title"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_logout"
+        android:orderInCategory="100"
+        android:title="@string/action_logout"
+        app:showAsAction="never" />
+
 </menu>

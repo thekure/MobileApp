@@ -46,7 +46,7 @@ dependencies {
     // When using the BoM, don't specify versions in Firebase dependencies
     // implementation("com.google.firebase:firebase-analytics")
     implementation("com.firebaseui:firebase-ui-auth:8.0.0")
-    implementation("com.google.android.gms:play-services-auth:21.0.0")
+    implementation("com.google.android.gms:play-services-auth:20.5.0")
     implementation("com.google.firebase:firebase-auth-ktx")
 
     // Other stuff

@@ -23,7 +23,6 @@
     <string name="fragment_timeline">Timeline</string>
     <string name="fragment_favorites">Favorites</string>
     <string name="fragment_maps">Maps</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="create_event">Create Event</string>
     <string name="event_image">event image</string>
@@ -32,4 +31,11 @@
     <string name="event_icon">an icon based on the event</string>
     <string name="event_title">the title of the event</string>
     <string name="event_favorite_button">button that adds event to favorite list\n</string>
+    <string name="user_info_title">User Info</string>
+    <string name="action_logout">Logout</string>
+    <string name="ok">Okay</string>
+    <string name="profile_pic">profile picture</string>
+    <string name="username">Peter O\'Hanrahahanrahan</string>
+    <string name="user_email">fart@city.yahoo</string>
+    <string name="unknown_user">\?? This user is unknown ??</string>
 </resources>
