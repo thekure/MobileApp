@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import com.google.android.material.button.MaterialButton
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
@@ -16,7 +17,8 @@ import kotlin.random.Random
 class EventAdapter(
     private val context: Context,
     private var resource: Int,
-    private val model: DataViewModel
+    private val model: DataViewModel,
+    private val favoritedListener: (Int) -> Unit
 ): BaseAdapter() {
 
     private var events: List<Event> = emptyList()
@@ -29,7 +31,7 @@ class EventAdapter(
         val location: TextView = view.findViewById(R.id.item_event_location)
         val date: TextView = view.findViewById(R.id.item_event_date)
         val description: TextView = view.findViewById(R.id.item_event_description)
-
+        val favoriteBtn: MaterialButton = view.findViewById(R.id.event_btn_favorite)
     }
 
     init {
@@ -54,13 +56,13 @@ class EventAdapter(
         val view = convertView ?: LayoutInflater.from(context).inflate(resource, parent, false)
         val viewHolder = (view.tag as? ViewHolder) ?: ViewHolder(view)
 
-        populateViewHolder(viewHolder, getItem(position) as Event)
+        populateViewHolder(viewHolder, getItem(position) as Event, position)
 
         view.tag = viewHolder
         return view
     }
 
-    private fun populateViewHolder(viewHolder: ViewHolder, event: Event) {
+    private fun populateViewHolder(viewHolder: ViewHolder, event: Event, position: Int) {
         val number = Random.nextInt(1, 501)
         with(viewHolder) {
             // Fill out the Material Design card.
@@ -71,6 +73,13 @@ class EventAdapter(
             Picasso.get().load("https://picsum.photos/seed/$number/150/150").into(eventLetter)
             location.text = event.eventLocation
             date.text = event.eventDate
+            favoriteBtn.setOnClickListener {
+                favoritedListener.invoke(position)
+                notifyDataSetChanged()
+            }
+            if (event.isFavorited) {
+                favoriteBtn.setIconResource(R.drawable.baseline_favorite_24)
+            } else favoriteBtn.setIconResource(R.drawable.outline_favorite_border_24)
         }
     }
 }

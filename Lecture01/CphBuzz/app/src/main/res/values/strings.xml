@@ -29,4 +29,7 @@
     <string name="event_image">event image</string>
     <string name="edit">Edit\n</string>
     <string name="info">Info\n</string>
+    <string name="event_icon">an icon based on the event</string>
+    <string name="event_title">the title of the event</string>
+    <string name="event_favorite_button">button that adds event to favorite list\n</string>
 </resources>

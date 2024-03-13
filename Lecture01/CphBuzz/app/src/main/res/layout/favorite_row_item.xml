@@ -6,7 +6,7 @@
     android:layout_height="wrap_content">
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/favorite_card"
+        android:id="@+id/fave_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
@@ -21,7 +21,7 @@
 
 
             <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/favorite_guideline"
+                android:id="@+id/fave_guideline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -31,70 +31,71 @@
                 android:layout_width="2dp"
                 android:layout_height="20dp"
                 android:background="@android:color/black"
-                app:layout_constraintStart_toEndOf="@+id/event_type"
-                app:layout_constraintEnd_toStartOf="@+id/event_date"
-                app:layout_constraintTop_toBottomOf="@id/event_title"
+                app:layout_constraintStart_toEndOf="@+id/fave_event_type"
+                app:layout_constraintEnd_toStartOf="@+id/fave_event_date"
+                app:layout_constraintTop_toBottomOf="@id/fave_event_title"
                 app:layout_constraintBottom_toBottomOf="parent"/>
 
             <TextView
-                android:id="@+id/event_title"
+                android:id="@+id/fave_event_title"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/margin_medium"
-                android:layout_marginEnd="@dimen/margin_medium"
-                android:layout_marginStart="@dimen/margin_medium"
+                android:layout_marginTop="@dimen/margin_small_8"
+                android:layout_marginEnd="@dimen/margin_small_8"
+                android:layout_marginStart="@dimen/margin_small_8"
                 android:lines="1"
                 android:ellipsize="end"
                 android:textAppearance="?attr/textAppearanceHeadline6"
-                app:layout_constraintEnd_toStartOf="@+id/favorite_guideline"
+                app:layout_constraintEnd_toStartOf="@+id/fave_guideline"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/event_type"
+                android:id="@+id/fave_event_type"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/margin_medium"
-                android:layout_marginEnd="@dimen/margin_medium"
-                android:layout_marginStart="@dimen/margin_medium"
+                android:layout_marginTop="@dimen/margin_small_8"
+                android:layout_marginEnd="@dimen/margin_small_8"
+                android:layout_marginStart="@dimen/margin_small_8"
                 android:lines="1"
                 android:ellipsize="end"
                 android:textAppearance="?attr/textAppearanceBody2"
                 android:textColor="?android:attr/textColorSecondary"
-                app:layout_constraintEnd_toStartOf="@+id/event_date"
+                app:layout_constraintEnd_toStartOf="@+id/fave_event_date"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/event_title" />
+                app:layout_constraintTop_toBottomOf="@+id/fave_event_title" />
 
             <TextView
-                android:id="@+id/event_date"
+                android:id="@+id/fave_event_date"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/margin_medium"
-                android:layout_marginStart="@dimen/margin_medium"
-                android:layout_marginTop="@dimen/margin_medium"
+                android:layout_marginEnd="@dimen/margin_small_8"
+                android:layout_marginStart="@dimen/margin_small_8"
+                android:layout_marginTop="@dimen/margin_small_8"
                 android:lines="1"
                 android:ellipsize="end"
                 android:textAppearance="?attr/textAppearanceBody2"
                 android:textColor="?android:attr/textColorSecondary"
-                app:layout_constraintEnd_toStartOf="@+id/favorite_guideline"
-                app:layout_constraintStart_toEndOf="@+id/event_type"
-                app:layout_constraintTop_toBottomOf="@+id/event_title"/>
+                app:layout_constraintEnd_toStartOf="@+id/fave_guideline"
+                app:layout_constraintStart_toEndOf="@+id/fave_event_type"
+                app:layout_constraintTop_toBottomOf="@+id/fave_event_title"/>
 
             <com.google.android.material.button.MaterialButton
                 style="?attr/borderlessButtonStyle"
-                android:id="@+id/btn_favorite"
-                android:layout_width="40dp"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/margin_standard"
-                android:layout_marginEnd="@dimen/margin_standard"
-                android:layout_marginTop="@dimen/margin_medium"
+                android:id="@+id/fave_btn_favorite"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginBottom="@dimen/margin_medium_16"
+                android:layout_marginEnd="@dimen/margin_medium_16"
+                android:layout_marginTop="@dimen/margin_small_8"
                 app:icon="@drawable/baseline_favorite_24"
-                app:layout_constraintEnd_toStartOf="@+id/event_image"
-                app:layout_constraintStart_toEndOf="@+id/favorite_guideline"
+                android:contentDescription="@string/event_favorite_button"
+                app:layout_constraintEnd_toStartOf="@+id/fave_event_image"
+                app:layout_constraintStart_toEndOf="@+id/fave_guideline"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView
-                android:id="@+id/event_image"
+                android:id="@+id/fave_event_image"
                 android:layout_width="75dp"
                 android:layout_height="75dp"
                 android:background="?colorSurfaceContainerLow"

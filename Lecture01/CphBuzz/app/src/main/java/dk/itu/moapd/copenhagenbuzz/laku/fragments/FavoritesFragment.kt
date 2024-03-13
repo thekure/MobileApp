@@ -14,7 +14,7 @@ import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 
 class FavoritesFragment : Fragment() {
     private var _binding: FragmentFavoritesBinding? = null
-    private val _model: DataViewModel by viewModels()
+    private lateinit var _model: DataViewModel
 
     private val binding
         get() = requireNotNull(_binding) {
@@ -36,13 +36,20 @@ class FavoritesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = FavoriteAdapter(_model)
+        _model = ViewModelProvider(requireActivity())[DataViewModel::class.java]
+        _model.favorites.observe(viewLifecycleOwner) { favorites ->
+            val adapter = FavoriteAdapter(favorites, favoritedListener = { position ->
+                val event = _model.favorites.value?.get(position)
+                _model.invertIsFavorited(event!!)
+            })
+
             with(binding) {
                 recyclerView.layoutManager = LinearLayoutManager(requireContext())
                 recyclerView.adapter = adapter
-
+            }
         }
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

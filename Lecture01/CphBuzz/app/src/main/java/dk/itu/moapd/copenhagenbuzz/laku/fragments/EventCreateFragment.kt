@@ -7,25 +7,26 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.FragmentEventCreateBinding
+import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class EventCreateFragment : Fragment() {
     private var _binding: FragmentEventCreateBinding? = null
+    private lateinit var model: DataViewModel
+    private lateinit var event: Event
 
     private val binding
         get() = requireNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
         }
-
-    // An instance of the 'Event' class.
-    private lateinit var event: Event
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,6 +37,7 @@ class EventCreateFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        model = ViewModelProvider(requireActivity())[DataViewModel::class.java]
 
         eventTypeSetup()
         setListeners()
@@ -57,7 +59,11 @@ class EventCreateFragment : Fragment() {
      */
     private fun eventTypeSetup(){
         val eventTypes = resources.getStringArray(R.array.event_types)
-        val arrayAdapter = ArrayAdapter(requireContext(), R.layout.event_type_dropdown, eventTypes)
+        val arrayAdapter = ArrayAdapter(
+            requireContext(),
+            R.layout.event_type_dropdown,
+            eventTypes
+        )
 
         binding.autoCompleteEventTypes.setAdapter(arrayAdapter)
     }
@@ -143,9 +149,14 @@ class EventCreateFragment : Fragment() {
 
                 // Show snack bar with event data.
                 showMessage(view)
+                model.createEvent(event)
                 //hideKeyboard()
             } else {
-                Toast.makeText(requireContext(), "You need to fill out all fields first.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "You need to fill out all fields first.",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -162,12 +173,10 @@ class EventCreateFragment : Fragment() {
      */
     private fun checkInputValidity(): Boolean =
         with(binding){
-            editTextEventName.text.toString().isNotEmpty() &&
-                    editTextEventLocation.text.toString().isNotEmpty() &&
-                    editTextEventDate.text.toString().isNotEmpty() &&
-                    autoCompleteEventTypes.text.toString().isNotEmpty() &&
-                    editTextEventDescription.text.toString().isNotEmpty()
+            editTextEventName.text.toString().isNotEmpty()      &&
+            editTextEventLocation.text.toString().isNotEmpty()  &&
+            editTextEventDate.text.toString().isNotEmpty()      &&
+            autoCompleteEventTypes.text.toString().isNotEmpty() &&
+            editTextEventDescription.text.toString().isNotEmpty()
         }
-
-
 }

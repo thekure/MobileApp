@@ -37,7 +37,15 @@ class TimelineFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Initialize EventAdapter with DataViewModel
-        val adapter = EventAdapter(requireContext(), R.layout.event_row_item, model)
+        val adapter = EventAdapter(
+                requireContext(),
+                R.layout.event_row_item,
+                model,
+                favoritedListener = { position ->
+                    val event = model.events.value?.get(position)
+                    model.invertIsFavorited(event!!)
+                }
+            )
 
         // Set adapter to ListView
         binding.listViewTimeline.adapter = adapter
