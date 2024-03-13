@@ -4,24 +4,25 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
+import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import com.google.android.material.button.MaterialButton
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
-import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import kotlin.random.Random
 
 class EventAdapter(
     private val context: Context,
     private var resource: Int,
-    private val model: DataViewModel,
+    data: List<Event>,
     private val favoritedListener: (Int) -> Unit
-): BaseAdapter() {
-
-    private var events: List<Event> = emptyList()
+): ArrayAdapter<Event>(
+    context,
+    R.layout.event_row_item,
+    data
+) {
 
     private class ViewHolder(view: View){
         val eventLetter: ImageView = view.findViewById(R.id.item_event_letter)
@@ -34,29 +35,15 @@ class EventAdapter(
         val favoriteBtn: MaterialButton = view.findViewById(R.id.event_btn_favorite)
     }
 
-    init {
-        model.events.observeForever { events ->
-            this.events = events
-            notifyDataSetChanged() // Notify adapter when dataset changes
-        }
-    }
-    override fun getCount(): Int {
-        return events.size
-    }
 
-    override fun getItem(position: Int): Any {
-        return events[position]
-    }
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
-
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = convertView ?: LayoutInflater.from(context).inflate(resource, parent, false)
         val viewHolder = (view.tag as? ViewHolder) ?: ViewHolder(view)
 
-        populateViewHolder(viewHolder, getItem(position) as Event, position)
+        getItem(position)?.let { event ->
+            populateViewHolder(viewHolder, event, position)
+        }
 
         view.tag = viewHolder
         return view

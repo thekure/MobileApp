@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.adapters.EventAdapter
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.FragmentTimelineBinding
@@ -19,7 +20,7 @@ class TimelineFragment : Fragment() {
             "Cannot access binding because it is null. Is the view visible?"
         }
 
-    private val model: DataViewModel by viewModels()
+    private lateinit var _model: DataViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,19 +37,20 @@ class TimelineFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize EventAdapter with DataViewModel
-        val adapter = EventAdapter(
+        _model = ViewModelProvider(requireActivity())[DataViewModel::class.java]
+        _model.events.observe(viewLifecycleOwner){ events ->
+            val adapter = EventAdapter(
                 requireContext(),
                 R.layout.event_row_item,
-                model,
+                events,
                 favoritedListener = { position ->
-                    val event = model.events.value?.get(position)
-                    model.invertIsFavorited(event!!)
+                    val event = _model.events.value?.get(position)
+                    _model.invertIsFavorited(event!!)
                 }
             )
 
-        // Set adapter to ListView
-        binding.listViewTimeline.adapter = adapter
+            binding.listViewTimeline.adapter = adapter
+        }
     }
 
     override fun onDestroyView() {
