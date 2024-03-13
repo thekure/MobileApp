@@ -1,5 +1,7 @@
 *.iml
 /app/google-services.json
+*.hprof
+gen-external-apklibs
 .gradle
 /local.properties
 /.idea/caches
