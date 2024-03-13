@@ -28,7 +28,6 @@ package dk.itu.moapd.copenhagenbuzz.laku.activities
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import dk.itu.moapd.copenhagenbuzz.laku.activities.MainActivity
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.ActivityLoginBinding
 
 /**
