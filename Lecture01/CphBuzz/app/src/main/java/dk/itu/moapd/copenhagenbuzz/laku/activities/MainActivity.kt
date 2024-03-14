@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var auth: FirebaseAuth
+    private lateinit var menu: Menu
 
     /**
      * A set of private constants used in this class.
@@ -98,66 +99,25 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         initNavMenuAndTopBar()
-        setListeners()
     }
 
     override fun onStart() {
         super.onStart()
-
         // Redirect the user to the LoginActivity if they are not logged in.
         auth.currentUser ?: startLoginActivity()
     }
 
     /**
-     * Inflates top_app_bar and decides whether or not to show login or logout button.
+     * Standard function for hiding the keyboard. Imported from java.
      */
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.top_app_bar, menu)
-        menu.findItem(R.id.accounts_button).isVisible =
-        !intent.getBooleanExtra("isLoggedIn", false)
-        menu.findItem(R.id.logout_button).isVisible =
-        intent.getBooleanExtra("isLoggedIn", false)
-        return true
+    private fun hideKeyboard(){
+        val imm = getSystemService(InputMethodManager::class.java)
+        imm?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     }
 
-    /**
-     * Redirects to login if not already logged in
-     */
-    private fun startLoginActivity() {
-        Intent(this, LoginActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }.let(::startActivity)
-    }
-
-
-    /**
-     * Sets up the user interface components by attaching relevant listeners to the
-     * necessary components.
-     */
-    private fun setListeners() {
-        with(binding.topAppBar){
-            setOnMenuItemClickListener{menuItem ->
-                when (menuItem.itemId) {
-                    R.id.accounts_button -> {
-                        val intent = Intent(this@MainActivity, LoginActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                        true
-                    }
-
-                    R.id.logout_button -> {
-                        val intent = Intent(this@MainActivity, LoginActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                        true
-                    }
-
-                    else -> false
-                }
-            }
-        }
-    }
+    // ------------------------------------
+    // All things navigation
+    // ------------------------------------
 
     /**
      * - Defines a NavHostFragment
@@ -182,16 +142,33 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Standard function for hiding the keyboard. Imported from java.
+     * Redirects to login if not already logged in
      */
-    private fun hideKeyboard(){
-        val imm = getSystemService(InputMethodManager::class.java)
-        imm?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+    private fun startLoginActivity() {
+        Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }.let(::startActivity)
     }
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.fragment_container_view)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+
+    // ------------------------------------
+    // This section is all things Top Menu
+    // ------------------------------------
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.top_app_bar, menu)
+        return true
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        // Update the menu state as needed
+        // For example, you can show/hide menu items based on certain conditions
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
@@ -211,6 +188,11 @@ class MainActivity : AppCompatActivity() {
             true
         }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun updateOptionsMenu() {
+        menu.clear() // Clear the existing menu items
+        menuInflater.inflate(R.menu.top_app_bar, menu) // Reinflate the menu from resource
     }
 }
 

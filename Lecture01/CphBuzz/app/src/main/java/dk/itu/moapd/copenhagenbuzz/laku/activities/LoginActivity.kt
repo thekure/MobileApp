@@ -33,13 +33,11 @@ import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.android.material.snackbar.Snackbar
 import dk.itu.moapd.copenhagenbuzz.laku.R
-import dk.itu.moapd.copenhagenbuzz.laku.databinding.ActivityLoginBinding
 
 /**
  * An activity class with methods to manage logging in to the application.
  */
 class LoginActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityLoginBinding
     private val signInLauncher = registerForActivityResult(
             FirebaseAuthUIActivityResultContract()
         ) { result ->
@@ -85,8 +83,7 @@ class LoginActivity : AppCompatActivity() {
             } else -> {
             // Sign in failed.
             showSnackBar("Authentication failed.")
-        }
-
+            }
         }
     }
 
@@ -104,30 +101,5 @@ class LoginActivity : AppCompatActivity() {
         Snackbar.make(
             window.decorView.rootView, message, Snackbar.LENGTH_SHORT
         ).show()
-    }
-
-
-    /**
-     * Configures listeners for Login and Guest buttons.
-     * - Passes intent (boolean, isLoggedIn)
-     */
-    private fun setListeners(){
-        with(binding.contentLogin){
-            buttonLogin.setOnClickListener {
-                val intent = Intent(this@LoginActivity, MainActivity::class.java).apply {
-                    putExtra("isLoggedIn", true)
-                }
-                startActivity(intent)
-                finish()
-            }
-
-            buttonGuest.setOnClickListener {
-                val intent = Intent(this@LoginActivity, MainActivity::class.java).apply {
-                    putExtra("isLoggedIn", false)
-                }
-                startActivity(intent)
-                finish()
-            }
-        }
     }
 }

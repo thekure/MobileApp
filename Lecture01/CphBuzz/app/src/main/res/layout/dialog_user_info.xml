@@ -8,24 +8,13 @@
     android:padding="@dimen/margin_medium_16"
     tools:context=".fragments.UserInfoDialogFragment">
 
-    <TextView
-        android:id="@+id/user_info_headline"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textAppearance="?attr/textAppearanceHeadline2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/image_view_photo"
-        app:layout_constraintTop_toTopOf="parent"
-        android:text="@string/user_info_title"/>
-
     <!-- User Photo -->
     <ImageView
         android:id="@+id/image_view_photo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:src="@drawable/baseline_logout_wrong"
-        app:layout_constraintTop_toBottomOf="@id/user_info_headline"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/text_view_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
