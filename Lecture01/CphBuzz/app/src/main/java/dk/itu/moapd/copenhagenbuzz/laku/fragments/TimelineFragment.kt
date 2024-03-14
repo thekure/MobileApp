@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.adapters.EventAdapter
@@ -46,7 +45,8 @@ class TimelineFragment : Fragment() {
                 favoritedListener = { position ->
                     val event = _model.events.value?.get(position)
                     _model.invertIsFavorited(event!!)
-                }
+                },
+                _model.getUser()
             )
 
             binding.listViewTimeline.adapter = adapter

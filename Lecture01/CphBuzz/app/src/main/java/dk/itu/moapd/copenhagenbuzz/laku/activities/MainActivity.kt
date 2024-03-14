@@ -32,6 +32,7 @@ import android.view.MenuItem
 import android.view.inputmethod.InputMethodManager
 import androidx.core.view.WindowCompat
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -42,6 +43,7 @@ import com.google.firebase.auth.FirebaseAuth
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.ActivityMainBinding
 import dk.itu.moapd.copenhagenbuzz.laku.fragments.UserInfoDialogFragment
+import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 
 /**
  * An activity class with methods to manage the main activity of the application.
@@ -58,7 +60,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var auth: FirebaseAuth
-    private lateinit var menu: Menu
+    private lateinit var _menu: Menu
 
     /**
      * A set of private constants used in this class.
@@ -99,12 +101,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         initNavMenuAndTopBar()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        // Redirect the user to the LoginActivity if they are not logged in.
-        auth.currentUser ?: startLoginActivity()
     }
 
     /**
@@ -160,16 +156,26 @@ class MainActivity : AppCompatActivity() {
     // ------------------------------------
     // This section is all things Top Menu
     // ------------------------------------
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.top_app_bar, menu)
+    /**
+     * Initializes _menu and inflates the top_app_bar
+     */
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        _menu = menu
+        menuInflater.inflate(R.menu.top_app_bar, _menu)
         return true
     }
 
+    /**
+     * Updates what options should be visible every time the menu is accessed.
+     */
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        // Update the menu state as needed
-        // For example, you can show/hide menu items based on certain conditions
+        updateOptionsMenu()
         return true
     }
+
+    /**
+     * Action listeners for each top menu option.
+     */
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         // Handle top app bar menu item clicks.
@@ -187,12 +193,27 @@ class MainActivity : AppCompatActivity() {
             startLoginActivity()
             true
         }
+        R.id.action_login -> {
+            startLoginActivity()
+            true
+        }
+        R.id.action_create_event -> {
+
+            true
+        }
         else -> super.onOptionsItemSelected(item)
     }
 
+    /**
+     * Auxiliary function for updating menu item visibility.
+     */
     private fun updateOptionsMenu() {
-        menu.clear() // Clear the existing menu items
-        menuInflater.inflate(R.menu.top_app_bar, menu) // Reinflate the menu from resource
+        val logOutButton = _menu.findItem(R.id.action_logout)
+        val logInButton = _menu.findItem(R.id.action_login)
+        val user = auth.currentUser
+
+        logInButton.isVisible  = (user == null || user.isAnonymous)
+        logOutButton.isVisible = !(user == null || user.isAnonymous)
     }
 }
 

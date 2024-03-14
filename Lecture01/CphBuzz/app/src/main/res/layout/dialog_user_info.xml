@@ -31,7 +31,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/text_view_email"
         app:layout_constraintTop_toBottomOf="@id/image_view_photo"
-        android:text="@string/username"
+        android:text="@string/user_guest"
     />
 
     <!-- User Email -->

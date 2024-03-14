@@ -37,17 +37,33 @@ class FavoritesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         _model = ViewModelProvider(requireActivity())[DataViewModel::class.java]
-        _model.favorites.observe(viewLifecycleOwner) { favorites ->
-            val adapter = FavoriteAdapter(favorites, favoritedListener = { position ->
-                val event = _model.favorites.value?.get(position)
-                _model.invertIsFavorited(event!!)
-            })
+        val isValidUser = _model.loggedIn()
 
-            with(binding) {
-                recyclerView.layoutManager = LinearLayoutManager(requireContext())
-                recyclerView.adapter = adapter
+        if(isValidUser){
+            _model.favorites.observe(viewLifecycleOwner) { favorites ->
+                val adapter = FavoriteAdapter(
+                    favorites,
+                    favoritedListener = { position ->
+                        val event = _model.favorites.value?.get(position)
+                        _model.invertIsFavorited(event!!)
+                    },
+                    _model.getUser()
+                )
+
+                with(binding) {
+                    recyclerView.layoutManager = LinearLayoutManager(requireContext())
+                    recyclerView.adapter = adapter
+                    notLoggedIn.visibility = View.GONE
+                }
+            }
+        } else {
+            with(binding){
+                recyclerView.visibility = View.GONE
+                notLoggedIn.visibility = View.VISIBLE
             }
         }
+
+
     }
 
     override fun onDestroyView() {

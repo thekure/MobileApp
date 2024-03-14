@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseUser
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.FavoriteRowItemBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
@@ -14,7 +15,8 @@ import com.squareup.picasso.Picasso
 
 class FavoriteAdapter(
     private val data: List<Event>,
-    private val favoritedListener: (Int) -> Unit
+    private val favoritedListener: (Int) -> Unit,
+    private val user: FirebaseUser?
 ): RecyclerView.Adapter<FavoriteAdapter.ViewHolder>() {
 
     companion object {

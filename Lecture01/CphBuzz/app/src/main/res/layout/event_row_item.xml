@@ -150,7 +150,8 @@
                     android:text="@string/edit"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/button_info"  />
+                    app:layout_constraintEnd_toStartOf="@+id/button_info"
+                    android:visibility="gone"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_info"

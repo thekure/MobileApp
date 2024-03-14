@@ -26,6 +26,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.javafaker.Faker
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import kotlin.random.Random
@@ -126,5 +128,14 @@ class DataViewModel(
         val events = _events.value?.toMutableList() ?: mutableListOf()
         events.add(event)
         _events.postValue(events)
+    }
+
+    fun getUser():FirebaseUser?{
+        return FirebaseAuth.getInstance().currentUser
+    }
+
+    fun loggedIn(): Boolean{
+        val user = FirebaseAuth.getInstance().currentUser
+        return !(user == null || user.isAnonymous)
     }
 }

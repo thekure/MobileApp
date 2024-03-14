@@ -35,7 +35,9 @@
     <string name="action_logout">Logout</string>
     <string name="ok">Okay</string>
     <string name="profile_pic">profile picture</string>
-    <string name="username">Peter O\'Hanrahahanrahan</string>
-    <string name="user_email">fart@city.yahoo</string>
+    <string name="user_guest">Guest</string>
+    <string name="user_email">WhyDon\'tYouCreateAUser@yahoo.com</string>
     <string name="unknown_user">\?? This user is unknown ??</string>
+    <string name="action_login">Login</string>
+    <string name="not_logged_in">Log in to use favorites feature</string>
 </resources>
