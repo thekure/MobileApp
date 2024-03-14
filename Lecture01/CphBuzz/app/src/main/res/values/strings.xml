@@ -40,4 +40,8 @@
     <string name="unknown_user">\?? This user is unknown ??</string>
     <string name="action_login">Login</string>
     <string name="not_logged_in">Log in to use favorites feature</string>
+    <string name="create">Create</string>
+    <string name="cancel">Cancel\n</string>
+    <string name="maps">Maps</string>
+    <string name="calendar">Calendar</string>
 </resources>

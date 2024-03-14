@@ -42,6 +42,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.firebase.auth.FirebaseAuth
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.ActivityMainBinding
+import dk.itu.moapd.copenhagenbuzz.laku.fragments.CreateEventDialogFragment
 import dk.itu.moapd.copenhagenbuzz.laku.fragments.UserInfoDialogFragment
 import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 
@@ -198,7 +199,12 @@ class MainActivity : AppCompatActivity() {
             true
         }
         R.id.action_create_event -> {
-
+            CreateEventDialogFragment().apply {
+                isCancelable = true
+            }.also { dialogFragment ->
+                dialogFragment.show(supportFragmentManager,
+                    "CreateEventDialogFragment")
+            }
             true
         }
         else -> super.onOptionsItemSelected(item)
@@ -210,10 +216,18 @@ class MainActivity : AppCompatActivity() {
     private fun updateOptionsMenu() {
         val logOutButton = _menu.findItem(R.id.action_logout)
         val logInButton = _menu.findItem(R.id.action_login)
-        val user = auth.currentUser
+        val createEventButton = _menu.findItem(R.id.action_create_event)
+        val userIsValid = !(auth.currentUser == null || auth.currentUser!!.isAnonymous)
 
-        logInButton.isVisible  = (user == null || user.isAnonymous)
-        logOutButton.isVisible = !(user == null || user.isAnonymous)
+        if(userIsValid){
+            createEventButton.isVisible = true
+            logOutButton.isVisible = true
+            logInButton.isVisible = false
+        } else {
+            createEventButton.isVisible = false
+            logOutButton.isVisible = false
+            logInButton.isVisible = true
+        }
     }
 }
 

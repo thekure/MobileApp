@@ -1,46 +1,57 @@
 package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
+import android.app.Dialog
+import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
+import android.util.Log
 import android.view.View
-import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import dk.itu.moapd.copenhagenbuzz.laku.R
-import dk.itu.moapd.copenhagenbuzz.laku.databinding.FragmentEventCreateBinding
+import dk.itu.moapd.copenhagenbuzz.laku.databinding.DialogCreateEventBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
+import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class EventCreateFragment : Fragment() {
-    private var _binding: FragmentEventCreateBinding? = null
+class CreateEventDialogFragment : DialogFragment() {
+    private var _binding: DialogCreateEventBinding? = null
     private lateinit var model: DataViewModel
-    private lateinit var event: Event
-
     private val binding
         get() = requireNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
         }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View = FragmentEventCreateBinding.inflate(inflater, container, false).also {
-        _binding = it
-    }.root
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        super.onCreateDialog(savedInstanceState)
+        _binding = DialogCreateEventBinding.inflate(layoutInflater)
         model = ViewModelProvider(requireActivity())[DataViewModel::class.java]
 
         eventTypeSetup()
         setListeners()
+
+
+        // Create and return a new dialog.
+        return MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.create_event)
+            .setView(binding.root)
+            .setPositiveButton(R.string.create) { dialog, _ ->
+                if(createEventFromFields()) {
+                    Log.d("DialogFragment", "Event creation successful, dismissing dialog.")
+                    //dialog.dismiss()
+                }
+            }
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
     }
 
     override fun onDestroyView() {
@@ -78,10 +89,6 @@ class EventCreateFragment : Fragment() {
                 if (hasFocus){
                     handleDatePickerAction()
                 }
-            }
-
-            fabAddEvent.setOnClickListener {
-                handleAddEventAction(it)
             }
         }
     }
@@ -133,11 +140,11 @@ class EventCreateFragment : Fragment() {
      * - Notifies user with a snack bar
      * - If fields are filled incorrectly, notifies user with a toast
      */
-    private fun handleAddEventAction(view: View){
+    private fun createEventFromFields(): Boolean{
         with(binding) {
             // Only execute the following code when the user fills all fields
             if (checkInputValidity()) {
-                event = Event(
+                val event = Event(
                     editTextEventName.text.toString().trim(),
                     editTextEventLocation.text.toString().trim(),
                     editTextEventDate.text.toString().trim(),
@@ -147,25 +154,18 @@ class EventCreateFragment : Fragment() {
                     ""
                 )
 
-                // Show snack bar with event data.
-                showMessage(view)
                 model.createEvent(event)
-                //hideKeyboard()
+                hideKeyboard()
+                return true
             } else {
                 Toast.makeText(
                     requireContext(),
                     "You need to fill out all fields first.",
                     Toast.LENGTH_SHORT
                 ).show()
+                return false
             }
         }
-    }
-
-    /**
-     * Responsible for displaying event creation message on the UI.
-     */
-    private fun showMessage(view: View) {
-        Snackbar.make(view, event.toString(), Snackbar.LENGTH_SHORT).show()
     }
 
     /**
@@ -174,9 +174,17 @@ class EventCreateFragment : Fragment() {
     private fun checkInputValidity(): Boolean =
         with(binding){
             editTextEventName.text.toString().isNotEmpty()      &&
-            editTextEventLocation.text.toString().isNotEmpty()  &&
-            editTextEventDate.text.toString().isNotEmpty()      &&
-            autoCompleteEventTypes.text.toString().isNotEmpty() &&
-            editTextEventDescription.text.toString().isNotEmpty()
+                    editTextEventLocation.text.toString().isNotEmpty()  &&
+                    editTextEventDate.text.toString().isNotEmpty()      &&
+                    autoCompleteEventTypes.text.toString().isNotEmpty() &&
+                    editTextEventDescription.text.toString().isNotEmpty()
         }
+
+    private fun hideKeyboard() {
+        val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val currentFocusedView = requireActivity().currentFocus
+        if (currentFocusedView != null) {
+            imm.hideSoftInputFromWindow(currentFocusedView.windowToken, 0)
+        }
+    }
 }

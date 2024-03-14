@@ -20,13 +20,13 @@
     <fragment
         android:id="@+id/fragment_maps"
         android:name="dk.itu.moapd.copenhagenbuzz.laku.fragments.MapsFragment"
-        android:label="@string/fragment_maps"
+        android:label="@string/maps"
         tools:layout="@layout/fragment_maps" />
 
     <fragment
-        android:id="@+id/fragment_event_create"
-        android:name="dk.itu.moapd.copenhagenbuzz.laku.fragments.EventCreateFragment"
-        android:label="@string/create_event"
-        tools:layout="@layout/fragment_event_create"
+        android:id="@+id/fragment_calendar"
+        android:name="dk.itu.moapd.copenhagenbuzz.laku.fragments.CalendarFragment"
+        android:label="@string/calendar"
+        tools:layout="@layout/fragment_calendar"
         />
 </navigation>

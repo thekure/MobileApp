@@ -19,7 +19,7 @@ import kotlin.random.Random
 class EventAdapter(
     private val context: Context,
     private var resource: Int,
-    data: List<Event>,
+    private val data: List<Event>,
     private val favoritedListener: (Int) -> Unit,
     private val user: FirebaseUser?
 ): ArrayAdapter<Event>(
