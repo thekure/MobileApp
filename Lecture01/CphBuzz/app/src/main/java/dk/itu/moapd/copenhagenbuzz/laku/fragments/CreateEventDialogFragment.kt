@@ -1,5 +1,6 @@
 package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
+import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
@@ -42,16 +43,17 @@ class CreateEventDialogFragment : DialogFragment() {
         return MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.create_event)
             .setView(binding.root)
-            .setPositiveButton(R.string.create) { dialog, _ ->
-                if(createEventFromFields()) {
-                    Log.d("DialogFragment", "Event creation successful, dismissing dialog.")
-                    //dialog.dismiss()
-                }
-            }
+            .setPositiveButton(R.string.create, null)
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .create()
+            .create().apply {
+                setOnShowListener {
+                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        if(createEventFromFields()) dismiss()
+                    }
+                }
+            }
     }
 
     override fun onDestroyView() {
@@ -156,16 +158,21 @@ class CreateEventDialogFragment : DialogFragment() {
 
                 model.createEvent(event)
                 hideKeyboard()
+                showToast("Event created.")
                 return true
             } else {
-                Toast.makeText(
-                    requireContext(),
-                    "You need to fill out all fields first.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                showToast("You need to fill out all fields first.")
                 return false
             }
         }
+    }
+
+    private fun showToast(message: String){
+        Toast.makeText(
+            requireContext(),
+            message,
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     /**
