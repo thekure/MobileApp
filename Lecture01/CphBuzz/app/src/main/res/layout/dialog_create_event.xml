@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,129 +9,141 @@
     android:padding="@dimen/margin_medium_16"
     tools:context=".fragments.CreateEventDialogFragment">
 
-    <!--  Event name -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/text_field_event_name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_small_8"
-        android:layout_marginEnd="@dimen/margin_small_8"
-        android:layout_marginTop="@dimen/margin_medium_16"
-        android:hint="@string/event_name"
-        app:startIconDrawable="@drawable/baseline_festival_24"
-        app:startIconContentDescription="This is a festival icon"
-        app:endIconMode="clear_text"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_text_event_name"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text" />
+            android:layout_height="wrap_content">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <!--  Event name -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/text_field_event_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin_small_8"
+                android:layout_marginEnd="@dimen/margin_small_8"
+                android:layout_marginTop="@dimen/margin_medium_16"
+                android:hint="@string/event_name"
+                app:startIconDrawable="@drawable/baseline_festival_24"
+                app:startIconContentDescription="This is a festival icon"
+                app:endIconMode="clear_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-    <!--  Event location  -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/text_field_event_location"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/margin_small_8"
-        android:layout_marginStart="@dimen/margin_small_8"
-        android:layout_marginTop="@dimen/margin_medium_16"
-        android:hint="@string/event_location"
-        app:startIconDrawable="@drawable/baseline_add_location_24"
-        app:startIconContentDescription="Add location icon"
-        app:endIconMode="clear_text"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_field_event_name">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_text_event_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_text_event_location"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <!--  Event location  -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/text_field_event_location"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/margin_small_8"
+                android:layout_marginStart="@dimen/margin_small_8"
+                android:layout_marginTop="@dimen/margin_medium_16"
+                android:hint="@string/event_location"
+                app:startIconDrawable="@drawable/baseline_add_location_24"
+                app:startIconContentDescription="Add location icon"
+                app:endIconMode="clear_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/text_field_event_name">
 
-    <!--  Event date -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/text_field_event_date"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/margin_small_8"
-        android:layout_marginStart="@dimen/margin_small_8"
-        android:layout_marginTop="@dimen/margin_medium_16"
-        android:hint="@string/event_date"
-        app:startIconDrawable="@drawable/baseline_calendar_month_24"
-        app:startIconContentDescription="Calendar icon"
-        app:endIconMode="clear_text"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_field_event_location">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_text_event_location"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_text_event_date"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <!--  Event date -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/text_field_event_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/margin_small_8"
+                android:layout_marginStart="@dimen/margin_small_8"
+                android:layout_marginTop="@dimen/margin_medium_16"
+                android:hint="@string/event_date"
+                app:startIconDrawable="@drawable/baseline_calendar_month_24"
+                app:startIconContentDescription="Calendar icon"
+                app:endIconMode="clear_text"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/text_field_event_location">
 
-    <!--  Event type -->
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_text_event_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-        android:id="@+id/text_field_event_type"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/margin_small_8"
-        android:layout_marginStart="@dimen/margin_small_8"
-        android:layout_marginTop="@dimen/margin_medium_16"
-        app:startIconDrawable="@drawable/baseline_celebration_24"
-        app:startIconContentDescription="Event icon"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_field_event_date">
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <AutoCompleteTextView
-            android:id="@+id/auto_complete_event_types"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/event_type"
-            android:inputType="none"
-            tools:ignore="SpeakableTextPresentCheck" />
+            <!--  Event type -->
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:id="@+id/text_field_event_type"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/margin_small_8"
+                android:layout_marginStart="@dimen/margin_small_8"
+                android:layout_marginTop="@dimen/margin_medium_16"
+                app:startIconDrawable="@drawable/baseline_celebration_24"
+                app:startIconContentDescription="Event icon"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/text_field_event_date">
 
-    <!--  Event description -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/text_field_event_description"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/margin_small_8"
-        android:layout_marginStart="@dimen/margin_small_8"
-        android:layout_marginTop="@dimen/margin_medium_16"
-        android:hint="@string/event_description"
-        app:endIconMode="clear_text"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_field_event_type">
+                <AutoCompleteTextView
+                    android:id="@+id/auto_complete_event_types"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/event_type"
+                    android:inputType="none"
+                    tools:ignore="SpeakableTextPresentCheck" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_text_event_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minLines="4"
-            android:maxLines="12"
-            android:inputType="textMultiLine|textCapSentences"
-            android:gravity="top|start"/>
+            </com.google.android.material.textfield.TextInputLayout>
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <!--  Event description -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/text_field_event_description"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/margin_small_8"
+                android:layout_marginStart="@dimen/margin_small_8"
+                android:layout_marginTop="@dimen/margin_medium_16"
+                android:hint="@string/event_description"
+                app:endIconMode="clear_text"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/text_field_event_type">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_text_event_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minLines="3"
+                    android:maxLines="12"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:gravity="top|start"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
