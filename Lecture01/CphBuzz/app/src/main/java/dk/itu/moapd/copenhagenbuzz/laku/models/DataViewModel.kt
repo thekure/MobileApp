@@ -92,7 +92,8 @@ class DataViewModel(
                 eventType = EventType.WEDDING,
                 eventDescription = faker.lorem().word(),
                 isFavorited = false,
-                eventImage = "https://picsum.photos/seed/$number/400/194"
+                eventImage = "https://picsum.photos/seed/$number/400/194",
+                null
             )
             eventList.add(event)
         }
@@ -105,7 +106,8 @@ class DataViewModel(
                 eventType = EventType.BIRTHDAY,
                 eventDescription = faker.lorem().word(),
                 isFavorited = true,
-                eventImage = "https://picsum.photos/seed/$number/400/194"
+                eventImage = "https://picsum.photos/seed/$number/400/194",
+                null
             )
             eventList.add(event)
         }

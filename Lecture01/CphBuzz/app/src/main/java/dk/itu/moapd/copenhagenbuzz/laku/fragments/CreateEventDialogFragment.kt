@@ -4,8 +4,6 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
-import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -13,7 +11,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.DialogCreateEventBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
@@ -153,7 +150,8 @@ class CreateEventDialogFragment : DialogFragment() {
                     enumValueOf(autoCompleteEventTypes.text.toString().uppercase()),
                     editTextEventDescription.text.toString().trim(),
                     false,
-                    ""
+                    editTextEventImage.text.toString().trim(),
+                    model.getUser()
                 )
 
                 model.createEvent(event)
@@ -178,14 +176,17 @@ class CreateEventDialogFragment : DialogFragment() {
     /**
      * Checks that all required fields have content before event creation.
      */
-    private fun checkInputValidity(): Boolean =
-        with(binding){
-            editTextEventName.text.toString().isNotEmpty()      &&
-                    editTextEventLocation.text.toString().isNotEmpty()  &&
-                    editTextEventDate.text.toString().isNotEmpty()      &&
-                    autoCompleteEventTypes.text.toString().isNotEmpty() &&
-                    editTextEventDescription.text.toString().isNotEmpty()
-        }
+    private fun checkInputValidity(): Boolean = true
+        // For the purposes of testing I'm commenting out this functionality
+
+        /*with(binding){
+            editTextEventName.text.toString().isNotEmpty()          &&
+            editTextEventLocation.text.toString().isNotEmpty()      &&
+            editTextEventDate.text.toString().isNotEmpty()          &&
+            autoCompleteEventTypes.text.toString().isNotEmpty()     &&
+            editTextEventDescription.text.toString().isNotEmpty()   &&
+            editTextEventImage.text.toString().isNotEmpty()
+        }*/
 
     private fun hideKeyboard() {
         val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

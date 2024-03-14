@@ -25,6 +25,8 @@
 
 package dk.itu.moapd.copenhagenbuzz.laku.models
 
+import com.google.firebase.auth.FirebaseUser
+
 /**
  * This class denotes the different event types.
  * Matches the array of strings in strings.xml
@@ -45,7 +47,8 @@ data class Event(
     var eventType: EventType,
     var eventDescription: String,
     var isFavorited: Boolean,
-    var eventImage: String
+    var eventImage: String,
+    var createdBy: FirebaseUser?
 ) {
 
     /**

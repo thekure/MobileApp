@@ -66,7 +66,7 @@ class EventAdapter(
             loadImages(viewHolder, event)       // Load images using Picasso
             setText(viewHolder, event)          // Set text from Event
             handleFavorites(viewHolder, event)  // Set icon for fave button
-            handleEditButton(viewHolder)        // Set visibility based on login status
+            handleEditButton(viewHolder, event) // Set visibility based on login status
             setListeners(viewHolder, position)  // Setup listeners for each button
         }
     }
@@ -88,11 +88,11 @@ class EventAdapter(
         }
     }
 
-    private fun handleEditButton(viewHolder: ViewHolder) {
-        if(user == null || user.isAnonymous){
-            viewHolder.editBtn.visibility = View.GONE
-        } else {
+    private fun handleEditButton(viewHolder: ViewHolder, event: Event) {
+        if(event.createdBy == user){
             viewHolder.editBtn.visibility = View.VISIBLE
+        } else {
+            viewHolder.editBtn.visibility = View.GONE
         }
     }
 

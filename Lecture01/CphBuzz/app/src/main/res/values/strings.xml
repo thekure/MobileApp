@@ -44,4 +44,5 @@
     <string name="cancel">Cancel\n</string>
     <string name="maps">Maps</string>
     <string name="calendar">Calendar</string>
+    <string name="default_image_url">https://picsum.photos/seed/200/400/194</string>
 </resources>
