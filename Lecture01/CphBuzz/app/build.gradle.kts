@@ -46,8 +46,13 @@ dependencies {
     // When using the BoM, don't specify versions in Firebase dependencies
     // implementation("com.google.firebase:firebase-analytics")
     implementation("com.firebaseui:firebase-ui-auth:8.0.0")
+    // Updating this past 20.5.0 messes with Firebase as of 15/03/2024
     implementation("com.google.android.gms:play-services-auth:20.5.0")
     implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-database-ktx")
+
+    // Dotenv to access secrets
+    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
 
     // Other stuff
     implementation("androidx.appcompat:appcompat:1.6.1")
