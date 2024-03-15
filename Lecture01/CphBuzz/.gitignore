@@ -1,5 +1,5 @@
 *.iml
-/app/assets
+/app/src/main/assets
 /app/google-services.json
 *.hprof
 gen-external-apklibs
