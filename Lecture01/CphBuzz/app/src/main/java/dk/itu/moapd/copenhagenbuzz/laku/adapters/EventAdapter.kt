@@ -7,13 +7,10 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.view.isGone
 import com.google.android.material.button.MaterialButton
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
-import dk.itu.moapd.copenhagenbuzz.laku.fragments.CreateEventDialogFragment
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import kotlin.random.Random
 
@@ -22,7 +19,7 @@ class EventAdapter(
     private var resource: Int,
     private val data: List<Event>,
     private val favoritedListener: (Int) -> Unit,
-    private val onEditEventClicked: () -> Unit,
+    private val onEditEventClicked: (Int) -> Unit,
     private val user: FirebaseUser?
 ): ArrayAdapter<Event>(
     context,
@@ -76,7 +73,7 @@ class EventAdapter(
     private fun setListeners(viewHolder: ViewHolder, position: Int) {
         with(viewHolder){
             editBtn.setOnClickListener{
-                onEditEventClicked()
+                onEditEventClicked(position)
             }
 
             infoBtn.setOnClickListener {
@@ -109,11 +106,11 @@ class EventAdapter(
 
     private fun setText(viewHolder: ViewHolder, event: Event) {
         with(viewHolder){
-            title.text = event.eventName
-            type.text = event.eventType.toString()
-            description.text = event.eventDescription
-            location.text = event.eventLocation
-            date.text = event.eventDate
+            title.text = event.title
+            type.text = event.type.toString()
+            description.text = event.description
+            location.text = event.location
+            date.text = event.date
         }
     }
 
@@ -121,7 +118,7 @@ class EventAdapter(
         val number = Random.nextInt(1, 501)
 
         with(viewHolder){
-            Picasso.get().load(event.eventImage).into(image)
+            Picasso.get().load(event.mainImage).into(image)
             Picasso.get().load("https://picsum.photos/seed/$number/150/150").into(eventLetter)
         }
     }

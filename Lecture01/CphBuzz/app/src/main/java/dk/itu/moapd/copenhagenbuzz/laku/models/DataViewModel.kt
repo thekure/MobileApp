@@ -86,13 +86,13 @@ class DataViewModel(
         repeat(2) {
             val number = Random.nextInt(1, 501)
             val event = Event(
-                eventName = faker.lorem().word(),
-                eventLocation = faker.address().city(),
-                eventDate = faker.date().toString(),
-                eventType = EventType.WEDDING,
-                eventDescription = faker.lorem().word(),
+                title = faker.lorem().word(),
+                location = faker.address().city(),
+                date = faker.date().toString(),
+                type = EventType.WEDDING,
+                description = faker.lorem().word(),
                 isFavorited = false,
-                eventImage = "https://picsum.photos/seed/$number/400/194",
+                mainImage = "https://picsum.photos/seed/$number/400/194",
                 null
             )
             eventList.add(event)
@@ -100,13 +100,13 @@ class DataViewModel(
         repeat(2) {
             val number = Random.nextInt(1, 501)
             val event = Event(
-                eventName = faker.lorem().word(),
-                eventLocation = faker.address().city(),
-                eventDate = faker.date().toString(),
-                eventType = EventType.BIRTHDAY,
-                eventDescription = faker.lorem().word(),
+                title = faker.lorem().word(),
+                location = faker.address().city(),
+                date = faker.date().toString(),
+                type = EventType.BIRTHDAY,
+                description = faker.lorem().word(),
                 isFavorited = true,
-                eventImage = "https://picsum.photos/seed/$number/400/194",
+                mainImage = "https://picsum.photos/seed/$number/400/194",
                 null
             )
             eventList.add(event)
@@ -132,10 +132,16 @@ class DataViewModel(
         _events.postValue(events)
     }
 
-    fun updateEvent(position: Int){
+    fun updateEvent(position: Int, updatedEvent: Event){
         val events = _events.value?.toMutableList() ?: mutableListOf()
-        val event = events[position]
+        events[position] = updatedEvent
+        _events.postValue(events)
 
+    }
+
+    fun getEvent(position: Int): Event {
+        val events = _events.value?.toMutableList() ?: mutableListOf()
+        return events[position]
     }
 
     fun getUser():FirebaseUser?{

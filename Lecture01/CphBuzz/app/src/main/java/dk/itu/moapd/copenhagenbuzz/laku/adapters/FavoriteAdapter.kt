@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseUser
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.FavoriteRowItemBinding
-import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import com.squareup.picasso.Picasso
 
@@ -33,9 +32,9 @@ class FavoriteAdapter(
         }
         fun bind(event: Event) {
             with(binding) {
-                Picasso.get().load(event.eventImage).into(faveEventImage)
-                faveEventTitle.text = event.eventName
-                faveEventType.text = event.eventType.toString()
+                Picasso.get().load(event.mainImage).into(faveEventImage)
+                faveEventTitle.text = event.title
+                faveEventType.text = event.type.toString()
             }
         }
     }

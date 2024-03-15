@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class CreateEventDialogFragment : DialogFragment() {
+class CreateEventDialogFragment(private val isEdit: Boolean = false, private val position: Int = -1) : DialogFragment() {
     private var _binding: DialogCreateEventBinding? = null
     private lateinit var model: DataViewModel
     private val binding
@@ -35,8 +35,52 @@ class CreateEventDialogFragment : DialogFragment() {
         eventTypeSetup()
         setListeners()
 
+        // Return appropriate dialog variant
+        return if(isEdit) buildEditEventDialog()
+        else              buildCreateEventDialog()
+    }
 
-        // Create and return a new dialog.
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    /**
+     * Create and return an edit event dialog.
+     */
+    private fun buildEditEventDialog(): androidx.appcompat.app.AlertDialog {
+        val event = model.getEvent(position)
+        val eventType = resources.getStringArray(R.array.event_types)[event.getTypeIndex()]
+
+        with(binding){
+            editTextEventName.setText(event.title)
+            editTextEventLocation.setText(event.location)
+            editTextEventDate.setText(event.date)
+            autoCompleteEventTypes.setText(eventType, false)
+            editTextEventDescription.setText(event.description)
+            editTextEventImage.setText(event.mainImage)
+        }
+
+        return MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.edit_event)
+            .setView(binding.root)
+            .setPositiveButton(R.string.save, null)
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create().apply {
+                setOnShowListener {
+                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        if(editEventFromFields(position)) dismiss()
+                    }
+                }
+            }
+    }
+
+    /**
+     * Create and return a fresh create event dialog.
+     */
+    private fun buildCreateEventDialog(): androidx.appcompat.app.AlertDialog{
         return MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.create_event)
             .setView(binding.root)
@@ -51,11 +95,6 @@ class CreateEventDialogFragment : DialogFragment() {
                     }
                 }
             }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     /**
@@ -157,6 +196,38 @@ class CreateEventDialogFragment : DialogFragment() {
                 model.createEvent(event)
                 hideKeyboard()
                 showToast("Event created.")
+                return true
+            } else {
+                showToast("You need to fill out all fields first.")
+                return false
+            }
+        }
+    }
+
+    /**
+     * Handler function for the edit event button.
+     * - Edits existing event if all fields have content.
+     * - Notifies user with a snack bar
+     * - If fields are filled incorrectly, notifies user with a toast
+     */
+    private fun editEventFromFields(position: Int): Boolean{
+        with(binding) {
+            // Only execute the following code when the user fills all fields
+            if (checkInputValidity()) {
+                val event = Event(
+                    editTextEventName.text.toString().trim(),
+                    editTextEventLocation.text.toString().trim(),
+                    editTextEventDate.text.toString().trim(),
+                    enumValueOf(autoCompleteEventTypes.text.toString().uppercase()),
+                    editTextEventDescription.text.toString().trim(),
+                    false,
+                    editTextEventImage.text.toString().trim(),
+                    model.getUser()
+                )
+
+                model.updateEvent(position, event)
+                hideKeyboard()
+                showToast("Event updated.")
                 return true
             } else {
                 showToast("You need to fill out all fields first.")

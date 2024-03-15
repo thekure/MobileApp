@@ -54,8 +54,8 @@ class TimelineFragment : Fragment() {
         }
     }
 
-    private fun showEditEventDialog() {
-        CreateEventDialogFragment().apply {
+    private fun showEditEventDialog(position: Int) {
+        CreateEventDialogFragment(true, position).apply {
             isCancelable = true
         }.also { dialogFragment ->
             dialogFragment.show(childFragmentManager, "CreateEventDialogFragment")

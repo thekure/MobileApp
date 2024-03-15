@@ -41,13 +41,13 @@ enum class EventType {
  * Contains the relevant fields of an event object.
  */
 data class Event(
-    var eventName: String,
-    var eventLocation: String,
-    var eventDate: String,
-    var eventType: EventType,
-    var eventDescription: String,
+    var title: String,
+    var location: String,
+    var date: String,
+    var type: EventType,
+    var description: String,
     var isFavorited: Boolean,
-    var eventImage: String,
+    var mainImage: String,
     var createdBy: FirebaseUser?
 ) {
 
@@ -55,10 +55,21 @@ data class Event(
      * Custom toString function.
      */
     override fun toString(): String {
-        return "Event (eventName = ’$eventName’, " +
-                "eventLocation = ’$eventLocation’) " +
-                "eventDate = ’$eventDate’) " +
-                "eventType = ’$eventType’) " +
-                "eventDescription = ’$eventDescription’)"
+        return "Event (eventName = ’$title’, " +
+                "location = ’$location’) " +
+                "date = ’$date’) " +
+                "type = ’$type’) " +
+                "description = ’$description’)"
+    }
+
+    /**
+     * Returns the index of the event type
+     */
+    fun getTypeIndex(): Int{
+        return when (type){
+            EventType.BIRTHDAY -> 0
+            EventType.WEDDING -> 1
+            EventType.CONFERENCE -> 2
+        }
     }
 }
