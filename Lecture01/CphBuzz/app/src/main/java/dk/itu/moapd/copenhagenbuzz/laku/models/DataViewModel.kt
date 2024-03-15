@@ -132,6 +132,12 @@ class DataViewModel(
         _events.postValue(events)
     }
 
+    fun updateEvent(position: Int){
+        val events = _events.value?.toMutableList() ?: mutableListOf()
+        val event = events[position]
+
+    }
+
     fun getUser():FirebaseUser?{
         return FirebaseAuth.getInstance().currentUser
     }

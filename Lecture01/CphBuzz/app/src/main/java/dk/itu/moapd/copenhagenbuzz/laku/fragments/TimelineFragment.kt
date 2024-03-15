@@ -46,10 +46,19 @@ class TimelineFragment : Fragment() {
                     val event = _model.events.value?.get(position)
                     _model.invertIsFavorited(event!!)
                 },
+                this::showEditEventDialog,
                 _model.getUser()
             )
 
             binding.listViewTimeline.adapter = adapter
+        }
+    }
+
+    private fun showEditEventDialog() {
+        CreateEventDialogFragment().apply {
+            isCancelable = true
+        }.also { dialogFragment ->
+            dialogFragment.show(childFragmentManager, "CreateEventDialogFragment")
         }
     }
 

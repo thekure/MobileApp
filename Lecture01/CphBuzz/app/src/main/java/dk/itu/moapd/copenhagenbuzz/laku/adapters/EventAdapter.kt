@@ -13,6 +13,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
+import dk.itu.moapd.copenhagenbuzz.laku.fragments.CreateEventDialogFragment
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import kotlin.random.Random
 
@@ -21,6 +22,7 @@ class EventAdapter(
     private var resource: Int,
     private val data: List<Event>,
     private val favoritedListener: (Int) -> Unit,
+    private val onEditEventClicked: () -> Unit,
     private val user: FirebaseUser?
 ): ArrayAdapter<Event>(
     context,
@@ -74,7 +76,7 @@ class EventAdapter(
     private fun setListeners(viewHolder: ViewHolder, position: Int) {
         with(viewHolder){
             editBtn.setOnClickListener{
-
+                onEditEventClicked()
             }
 
             infoBtn.setOnClickListener {

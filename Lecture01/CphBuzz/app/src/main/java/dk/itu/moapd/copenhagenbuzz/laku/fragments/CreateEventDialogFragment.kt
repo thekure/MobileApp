@@ -176,17 +176,16 @@ class CreateEventDialogFragment : DialogFragment() {
     /**
      * Checks that all required fields have content before event creation.
      */
-    private fun checkInputValidity(): Boolean = true
-        // For the purposes of testing I'm commenting out this functionality
-
-        /*with(binding){
+    private fun checkInputValidity(): Boolean =
+        // For the purposes of development I'm commenting out some of this functionality
+        with(binding){
             editTextEventName.text.toString().isNotEmpty()          &&
-            editTextEventLocation.text.toString().isNotEmpty()      &&
-            editTextEventDate.text.toString().isNotEmpty()          &&
+            // editTextEventLocation.text.toString().isNotEmpty()      &&
+            // editTextEventDate.text.toString().isNotEmpty()          &&
             autoCompleteEventTypes.text.toString().isNotEmpty()     &&
-            editTextEventDescription.text.toString().isNotEmpty()   &&
+            // editTextEventDescription.text.toString().isNotEmpty()   &&
             editTextEventImage.text.toString().isNotEmpty()
-        }*/
+        }
 
     private fun hideKeyboard() {
         val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
