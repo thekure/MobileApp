@@ -7,7 +7,7 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
 val DATABASE_URL: String = dotenv {
-    directory = "./assets"
+    directory = "/assets"
     filename = "env"
 }["DATABASE_URL"]
 
