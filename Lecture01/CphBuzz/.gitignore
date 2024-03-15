@@ -1,5 +1,5 @@
 *.iml
-./secrets.env
+/app/assets
 /app/google-services.json
 *.hprof
 gen-external-apklibs
