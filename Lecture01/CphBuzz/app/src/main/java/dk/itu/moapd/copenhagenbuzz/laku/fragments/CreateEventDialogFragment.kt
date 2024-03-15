@@ -15,6 +15,7 @@ import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.DialogCreateEventBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
+import dk.itu.moapd.copenhagenbuzz.laku.models.EventType
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -23,6 +24,7 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
     private var _binding: DialogCreateEventBinding? = null
     private lateinit var model: DataViewModel
     private var dates: LongArray = longArrayOf(0, 0)
+    private var type: String = ""
     private val binding
         get() = requireNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
@@ -51,7 +53,7 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
      */
     private fun buildEditEventDialog(): androidx.appcompat.app.AlertDialog {
         val event = model.getEvent(position)
-        val eventType = resources.getStringArray(R.array.event_types)[event.getTypeIndex()]
+        val eventType = resources.getStringArray(R.array.event_types)[event.type]
 
         with(binding){
             editTextEventName.setText(event.title)
@@ -115,7 +117,13 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
             eventTypes
         )
 
-        binding.autoCompleteEventTypes.setAdapter(arrayAdapter)
+        with(binding.autoCompleteEventTypes){
+            setAdapter(arrayAdapter)
+            setOnItemClickListener { _, _, _, _ ->
+                hideKeyboard()
+            }
+        }
+
     }
 
     /**
@@ -184,9 +192,6 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
      * - If fields are filled incorrectly, notifies user with a toast
      */
     private fun createEventFromFields(): Boolean{
-        val dateFormat = SimpleDateFormat("EEE, MMM dd yyyy", Locale.ENGLISH)
-        val date = dateFormat.parse(binding.editTextEventDate.text.toString().trim())?.time ?: 0
-
         with(binding) {
             // Only execute the following code when the user fills all fields
             if (checkInputValidity()) {
@@ -195,11 +200,11 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
                     editTextEventLocation.text.toString().trim(),
                     dates[0], // startDate as Long
                     dates[1], // endDate as Long
-                    enumValueOf(autoCompleteEventTypes.text.toString().uppercase()),
+                    getTypeIndex(autoCompleteEventTypes.text.toString()),
                     editTextEventDescription.text.toString().trim(),
                     false,
                     editTextEventImage.text.toString().trim(),
-                    model.getUser()
+                    model.getUser()!!.uid
                 )
 
                 model.createEvent(event)
@@ -228,11 +233,11 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
                     editTextEventLocation.text.toString().trim(),
                     dates[0], // startDate as Long
                     dates[1], // endDate as Long
-                    enumValueOf(autoCompleteEventTypes.text.toString().uppercase()),
+                    getTypeIndex(autoCompleteEventTypes.text.toString()),
                     editTextEventDescription.text.toString().trim(),
                     false,
                     editTextEventImage.text.toString().trim(),
-                    model.getUser()
+                    model.getUser()!!.uid
                 )
 
                 model.updateEvent(position, event)
@@ -267,6 +272,15 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
             // editTextEventDescription.text.toString().isNotEmpty()   &&
             editTextEventImage.text.toString().isNotEmpty()
         }
+
+    private fun getTypeIndex(type: String): Int{
+        return when (type){
+            "Birthday" -> 0
+            "Wedding" -> 1
+            "Conference" -> 2
+            else -> -1 // This won't happen.
+        }
+    }
 
     private fun hideKeyboard() {
         val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

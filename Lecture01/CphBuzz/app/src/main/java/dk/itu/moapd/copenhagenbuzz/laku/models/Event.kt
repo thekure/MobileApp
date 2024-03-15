@@ -25,7 +25,6 @@
 
 package dk.itu.moapd.copenhagenbuzz.laku.models
 
-import com.google.firebase.auth.FirebaseUser
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -48,12 +47,11 @@ data class Event(
     var location: String,
     var startDate: Long,
     var endDate: Long,
-    //var date: String,
-    var type: EventType,
+    var type: Int,
     var description: String,
     var isFavorited: Boolean,
     var mainImage: String,
-    var userID: FirebaseUser?
+    var userID: String
 ) {
 
     /**
@@ -63,18 +61,16 @@ data class Event(
         return "Event (eventName = ’$title’, " +
                 "location = ’$location’) " +
                 "date = ’${getDateString()}’) " +
-                "type = ’$type’) " +
+                "type = ’${getTypeAsString()}’) " +
                 "description = ’$description’)"
     }
 
-    /**
-     * Returns the index of the event type
-     */
-    fun getTypeIndex(): Int{
+    fun getTypeAsString(): String{
         return when (type){
-            EventType.BIRTHDAY -> 0
-            EventType.WEDDING -> 1
-            EventType.CONFERENCE -> 2
+            0 -> EventType.BIRTHDAY.toString()
+            1 -> EventType.WEDDING.toString()
+            2 -> EventType.CONFERENCE.toString()
+            else  -> "Not a type" // This will never happen.
         }
     }
 

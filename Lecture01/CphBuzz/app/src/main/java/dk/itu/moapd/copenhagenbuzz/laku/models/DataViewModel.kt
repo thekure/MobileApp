@@ -28,6 +28,9 @@ import androidx.lifecycle.viewModelScope
 import com.github.javafaker.Faker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+import dk.itu.moapd.copenhagenbuzz.laku.DATABASE_URL
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import java.util.Calendar
@@ -64,6 +67,10 @@ class DataViewModel(
     val events: LiveData<List<Event>> = _events
     val favorites: LiveData<List<Event>> = _favorites
 
+    // Initialize Firebase Auth and connect to the Firebase Realtime Database.
+    private val auth = FirebaseAuth.getInstance()
+    private val db = Firebase.database(DATABASE_URL).reference
+
     init{
         fetchEvents()
     }
@@ -93,11 +100,11 @@ class DataViewModel(
                 location = faker.address().city(),
                 startDate = dates.first,
                 endDate = dates.second,
-                type = EventType.WEDDING,
+                type = Random.nextInt(0, 2),
                 description = faker.lorem().word(),
                 isFavorited = false,
                 mainImage = "https://picsum.photos/seed/$number/400/194",
-                null
+                "Faker"
             )
             eventList.add(event)
         }
@@ -109,11 +116,11 @@ class DataViewModel(
                 location = faker.address().city(),
                 startDate = dates.first,
                 endDate = dates.second,
-                type = EventType.BIRTHDAY,
+                type = Random.nextInt(0, 2),
                 description = faker.lorem().word(),
                 isFavorited = true,
                 mainImage = "https://picsum.photos/seed/$number/400/194",
-                null
+                "Faker"
             )
             eventList.add(event)
         }
@@ -140,9 +147,6 @@ class DataViewModel(
         return Pair(startDate, endDate)
     }
 
-    /**
-     * Return a list of favorited events.
-     */
     private fun getFavorites(): List<Event> {
         return _events.value?.filter { it.isFavorited } ?: emptyList()
     }
@@ -156,6 +160,20 @@ class DataViewModel(
         val events = _events.value?.toMutableList() ?: mutableListOf()
         events.add(event)
         _events.postValue(events)
+
+        // If the user is authenticated, create a new unique key for the object in the database.
+        auth.currentUser?.let { user ->
+            db.child("events")
+                .child(user.uid)
+                .push()
+                .key?.let { uid ->
+                    // Insert the object in the database.
+                    db.child("events")
+                        .child(user.uid)
+                        .child(uid)
+                        .setValue(event)
+                }
+        }
     }
 
     fun updateEvent(position: Int, updatedEvent: Event){
@@ -170,7 +188,7 @@ class DataViewModel(
         return events[position]
     }
 
-    fun getUser():FirebaseUser?{
+    fun getUser():FirebaseUser? {
         return FirebaseAuth.getInstance().currentUser
     }
 
@@ -185,11 +203,25 @@ class DataViewModel(
             location = "",
             startDate = 0,
             endDate = 0,
-            type = EventType.WEDDING,
+            type = Random.nextInt(0, 2),
             description = "",
             isFavorited = false,
             mainImage = "",
-            userID = null
+            userID = "Created By getEmptyEvent"
         )
     }
+
+  /* 
+     {
+      "Title": "Test",
+      "Location": "Fart City",
+      "StartDate": 1677897600000,
+      "EndDate": 1677984000000,
+      "Type": 1,
+      "Description": "Some random text",
+      "ImageURL": "https://picsum.photos/seed/173/400/194",
+      "UserID": "bmw78KmygbbnUdvi1U69rWjylJy1"
+
+     }
+  */
 }

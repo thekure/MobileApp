@@ -91,7 +91,7 @@ class EventAdapter(
     }
 
     private fun handleEditButton(viewHolder: ViewHolder, event: Event) {
-        if(event.userID == user){
+        if(event.userID == user?.uid){
             viewHolder.editBtn.visibility = View.VISIBLE
         } else {
             viewHolder.editBtn.visibility = View.GONE
@@ -110,7 +110,7 @@ class EventAdapter(
     private fun setText(viewHolder: ViewHolder, event: Event) {
         with(viewHolder){
             title.text = event.title
-            type.text = event.type.toString()
+            type.text = event.getTypeAsString()
             description.text = event.description
             location.text = event.location
             date.text = event.getDateString()

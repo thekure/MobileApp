@@ -34,7 +34,7 @@ class FavoriteAdapter(
             with(binding) {
                 Picasso.get().load(event.mainImage).into(faveEventImage)
                 faveEventTitle.text = event.title
-                faveEventType.text = event.type.toString()
+                faveEventType.text = event.getTypeAsString()
             }
         }
     }
