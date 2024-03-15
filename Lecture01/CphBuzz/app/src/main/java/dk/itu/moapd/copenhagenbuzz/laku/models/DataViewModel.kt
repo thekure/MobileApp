@@ -30,6 +30,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
 import java.lang.Exception
+import java.util.Calendar
 import kotlin.random.Random
 
 
@@ -85,10 +86,13 @@ class DataViewModel(
         val eventList = mutableListOf<Event>()
         repeat(2) {
             val number = Random.nextInt(1, 501)
+            val dates = getFakeDates()
+
             val event = Event(
                 title = faker.lorem().word(),
                 location = faker.address().city(),
-                date = faker.date().toString(),
+                startDate = dates.first,
+                endDate = dates.second,
                 type = EventType.WEDDING,
                 description = faker.lorem().word(),
                 isFavorited = false,
@@ -99,10 +103,12 @@ class DataViewModel(
         }
         repeat(2) {
             val number = Random.nextInt(1, 501)
+            val dates = getFakeDates()
             val event = Event(
                 title = faker.lorem().word(),
                 location = faker.address().city(),
-                date = faker.date().toString(),
+                startDate = dates.first,
+                endDate = dates.second,
                 type = EventType.BIRTHDAY,
                 description = faker.lorem().word(),
                 isFavorited = true,
@@ -112,6 +118,26 @@ class DataViewModel(
             eventList.add(event)
         }
         return eventList
+    }
+
+    private fun getFakeDates(): Pair<Long, Long>{
+        // Get the current date
+        var cal = Calendar.getInstance()
+        val seed = Random.nextInt(1, 31)
+        cal.add(Calendar.DAY_OF_YEAR, seed)
+        val startDateDate = cal.time
+
+        // Add a random number of days (up to 7) to the first date to get the second date
+        cal = Calendar.getInstance()
+        cal.time = startDateDate
+        cal.add(Calendar.DAY_OF_YEAR, Random.nextInt(1, 8))
+        val endDateDate = cal.time
+
+        // Convert dates to Long values (milliseconds since the Unix epoch)
+        val startDate = startDateDate.time
+        val endDate = endDateDate.time
+
+        return Pair(startDate, endDate)
     }
 
     /**
@@ -151,5 +177,19 @@ class DataViewModel(
     fun loggedIn(): Boolean{
         val user = FirebaseAuth.getInstance().currentUser
         return !(user == null || user.isAnonymous)
+    }
+
+    fun getEmptyEvent(): Event{
+        return Event(
+            title = "",
+            location = "",
+            startDate = 0,
+            endDate = 0,
+            type = EventType.WEDDING,
+            description = "",
+            isFavorited = false,
+            mainImage = "",
+            userID = null
+        )
     }
 }

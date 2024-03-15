@@ -26,6 +26,9 @@
 package dk.itu.moapd.copenhagenbuzz.laku.models
 
 import com.google.firebase.auth.FirebaseUser
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * This class denotes the different event types.
@@ -43,12 +46,14 @@ enum class EventType {
 data class Event(
     var title: String,
     var location: String,
-    var date: String,
+    var startDate: Long,
+    var endDate: Long,
+    //var date: String,
     var type: EventType,
     var description: String,
     var isFavorited: Boolean,
     var mainImage: String,
-    var createdBy: FirebaseUser?
+    var userID: FirebaseUser?
 ) {
 
     /**
@@ -57,7 +62,7 @@ data class Event(
     override fun toString(): String {
         return "Event (eventName = ’$title’, " +
                 "location = ’$location’) " +
-                "date = ’$date’) " +
+                "date = ’${getDateString()}’) " +
                 "type = ’$type’) " +
                 "description = ’$description’)"
     }
@@ -71,5 +76,22 @@ data class Event(
             EventType.WEDDING -> 1
             EventType.CONFERENCE -> 2
         }
+    }
+
+    /**
+     * Helper function to convert dates from long to string.
+     */
+    fun getDateString(): String{
+        /**
+         * Defines the wanted display format for the dates.
+         * Currently set to: EEE, MMM dd yyyy.
+         */
+        val dateFormat = SimpleDateFormat("EEE, MMM dd yyyy", Locale.ENGLISH)
+        val startDateAsString = dateFormat.format(Date(startDate))
+        val endDateAsString = dateFormat.format(Date(endDate))
+
+        if(startDateAsString == endDateAsString) return startDateAsString
+
+        return "$startDateAsString - $endDateAsString"
     }
 }

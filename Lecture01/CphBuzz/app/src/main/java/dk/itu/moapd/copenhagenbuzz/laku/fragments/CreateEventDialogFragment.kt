@@ -22,6 +22,7 @@ import java.util.Locale
 class CreateEventDialogFragment(private val isEdit: Boolean = false, private val position: Int = -1) : DialogFragment() {
     private var _binding: DialogCreateEventBinding? = null
     private lateinit var model: DataViewModel
+    private var dates: LongArray = longArrayOf(0, 0)
     private val binding
         get() = requireNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
@@ -55,7 +56,7 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
         with(binding){
             editTextEventName.setText(event.title)
             editTextEventLocation.setText(event.location)
-            editTextEventDate.setText(event.date)
+            editTextEventDate.setText(event.getDateString())
             autoCompleteEventTypes.setText(eventType, false)
             editTextEventDescription.setText(event.description)
             editTextEventImage.setText(event.mainImage)
@@ -148,28 +149,32 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
         datePicker.show(parentFragmentManager, "tag")
 
         datePicker.addOnPositiveButtonClickListener { selection ->
-            /**
-             * Defines the wanted display format for the dates.
-             * Currently set to: EEE, MMM dd yyyy.
-             */
-            val dateFormat = SimpleDateFormat("EEE, MMM dd yyyy", Locale.ENGLISH)
-            val startDate = dateFormat.format(Date(selection.first))
-            val endDate = dateFormat.format(Date(selection.second))
 
-            /**
-             * Uses start- and end dates to generate a single range string, using the date
-             * range resource, which takes 2 parameters.
-             */
-            val combinedString = "$startDate - $endDate" //"@strings/date_range" //""$startDate - $endDate"
+            dates[0] = selection.first
+            dates[1] = selection.second
+
             with(binding.editTextEventDate){
-                if(startDate == endDate){
-                    setText(startDate)
-                } else {
-                    setText(combinedString)
-                }
+                setText(getDateString(selection.first, selection.second))
                 clearFocus()
             }
         }
+    }
+
+    /**
+     * Helper function to convert dates from long to string.
+     */
+    private fun getDateString(startDate: Long, endDate: Long): String{
+        /**
+         * Defines the wanted display format for the dates.
+         * Currently set to: EEE, MMM dd yyyy.
+         */
+        val dateFormat = SimpleDateFormat("EEE, MMM dd yyyy", Locale.ENGLISH)
+        val startDateAsString = dateFormat.format(Date(startDate))
+        val endDateAsString = dateFormat.format(Date(endDate))
+
+        if(startDateAsString == endDateAsString) return startDateAsString
+
+        return "$startDateAsString - $endDateAsString"
     }
 
     /**
@@ -179,13 +184,17 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
      * - If fields are filled incorrectly, notifies user with a toast
      */
     private fun createEventFromFields(): Boolean{
+        val dateFormat = SimpleDateFormat("EEE, MMM dd yyyy", Locale.ENGLISH)
+        val date = dateFormat.parse(binding.editTextEventDate.text.toString().trim())?.time ?: 0
+
         with(binding) {
             // Only execute the following code when the user fills all fields
             if (checkInputValidity()) {
                 val event = Event(
                     editTextEventName.text.toString().trim(),
                     editTextEventLocation.text.toString().trim(),
-                    editTextEventDate.text.toString().trim(),
+                    dates[0], // startDate as Long
+                    dates[1], // endDate as Long
                     enumValueOf(autoCompleteEventTypes.text.toString().uppercase()),
                     editTextEventDescription.text.toString().trim(),
                     false,
@@ -217,7 +226,8 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
                 val event = Event(
                     editTextEventName.text.toString().trim(),
                     editTextEventLocation.text.toString().trim(),
-                    editTextEventDate.text.toString().trim(),
+                    dates[0], // startDate as Long
+                    dates[1], // endDate as Long
                     enumValueOf(autoCompleteEventTypes.text.toString().uppercase()),
                     editTextEventDescription.text.toString().trim(),
                     false,

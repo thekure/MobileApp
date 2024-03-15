@@ -12,6 +12,9 @@ import com.google.firebase.auth.FirebaseUser
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.random.Random
 
 class EventAdapter(
@@ -88,7 +91,7 @@ class EventAdapter(
     }
 
     private fun handleEditButton(viewHolder: ViewHolder, event: Event) {
-        if(event.createdBy == user){
+        if(event.userID == user){
             viewHolder.editBtn.visibility = View.VISIBLE
         } else {
             viewHolder.editBtn.visibility = View.GONE
@@ -110,7 +113,7 @@ class EventAdapter(
             type.text = event.type.toString()
             description.text = event.description
             location.text = event.location
-            date.text = event.date
+            date.text = event.getDateString()
         }
     }
 
