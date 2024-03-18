@@ -211,7 +211,7 @@ class DataViewModel(
         )
     }
 
-  /* 
+  /*
      {
       "Title": "Test",
       "Location": "Fart City",
@@ -220,8 +220,7 @@ class DataViewModel(
       "Type": 1,
       "Description": "Some random text",
       "ImageURL": "https://picsum.photos/seed/173/400/194",
-      "UserID": "bmw78KmygbbnUdvi1U69rWjylJy1"
-
+      "UserID": ""
      }
   */
 }
