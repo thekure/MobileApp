@@ -43,15 +43,16 @@ enum class EventType {
  * Contains the relevant fields of an event object.
  */
 data class Event(
-    var title: String,
-    var location: String,
-    var startDate: Long,
-    var endDate: Long,
-    var type: Int,
-    var description: String,
-    var isFavorited: Boolean,
-    var mainImage: String,
-    var userID: String
+    var title: String? = null,
+    var location: String? = null,
+    var startDate: Long? = null,
+    var endDate: Long? = null,
+    var type: Int? = null,
+    var description: String? = null,
+    var isFavorited: Boolean? = null,
+    var mainImage: String? = null,
+    var userID: String? = null,
+    var eventID: String? = null
 ) {
 
     /**
@@ -83,8 +84,8 @@ data class Event(
          * Currently set to: EEE, MMM dd yyyy.
          */
         val dateFormat = SimpleDateFormat("EEE, MMM dd yyyy", Locale.ENGLISH)
-        val startDateAsString = dateFormat.format(Date(startDate))
-        val endDateAsString = dateFormat.format(Date(endDate))
+        val startDateAsString = dateFormat.format(Date(startDate!!))
+        val endDateAsString = dateFormat.format(Date(endDate!!))
 
         if(startDateAsString == endDateAsString) return startDateAsString
 

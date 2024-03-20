@@ -53,7 +53,7 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
      */
     private fun buildEditEventDialog(): androidx.appcompat.app.AlertDialog {
         val event = model.getEvent(position)
-        val eventType = resources.getStringArray(R.array.event_types)[event.type]
+        val eventType = resources.getStringArray(R.array.event_types)[event.type!!]
 
         with(binding){
             editTextEventName.setText(event.title)
@@ -204,7 +204,8 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
                     editTextEventDescription.text.toString().trim(),
                     false,
                     editTextEventImage.text.toString().trim(),
-                    model.getUser()!!.uid
+                    model.getUser()!!.uid,
+                    "not_generated_yet"
                 )
 
                 model.createEvent(event)
@@ -237,7 +238,8 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
                     editTextEventDescription.text.toString().trim(),
                     false,
                     editTextEventImage.text.toString().trim(),
-                    model.getUser()!!.uid
+                    model.getUser()!!.uid,
+                    model.getEvent(position).eventID
                 )
 
                 model.updateEvent(position, event)

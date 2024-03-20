@@ -100,7 +100,7 @@ class EventAdapter(
 
     private fun handleFavorites(viewHolder: ViewHolder, event: Event) {
         viewHolder.favoriteBtn.setIconResource(
-            if (event.isFavorited) R.drawable.baseline_favorite_24
+            if (event.isFavorited!!) R.drawable.baseline_favorite_24
             else R.drawable.outline_favorite_border_24
         )
 

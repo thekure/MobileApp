@@ -20,6 +20,7 @@
  */
 package dk.itu.moapd.copenhagenbuzz.laku.models
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -104,7 +105,8 @@ class DataViewModel(
                 description = faker.lorem().word(),
                 isFavorited = false,
                 mainImage = "https://picsum.photos/seed/$number/400/194",
-                "Faker"
+                "Faker",
+                eventID = "fake"
             )
             eventList.add(event)
         }
@@ -120,7 +122,8 @@ class DataViewModel(
                 description = faker.lorem().word(),
                 isFavorited = true,
                 mainImage = "https://picsum.photos/seed/$number/400/194",
-                "Faker"
+                "Faker",
+                eventID = "fake"
             )
             eventList.add(event)
         }
@@ -148,13 +151,26 @@ class DataViewModel(
     }
 
     private fun getFavorites(): List<Event> {
-        return _events.value?.filter { it.isFavorited } ?: emptyList()
+        return _events.value?.filter { it.isFavorited!! } ?: emptyList()
     }
 
     fun invertIsFavorited(event: Event) {
-        event.isFavorited = !event.isFavorited
+        event.isFavorited = !event.isFavorited!!
         _favorites.value = getFavorites()
     }
+
+    data class Event2(
+        var title: String? = null,
+        var location: String? = null,
+        var startDate: Long? = null,
+        var endDate: Long? = null,
+        var type: Int? = null,
+        var description: String? = null,
+        var isFavorited: Boolean? = null,
+        var mainImage: String? = null,
+        var userID: String? = null,
+        var eventID: String? = null
+    )
 
     fun createEvent(event: Event) {
         val events = _events.value?.toMutableList() ?: mutableListOf()
@@ -162,17 +178,35 @@ class DataViewModel(
         _events.postValue(events)
 
         // If the user is authenticated, create a new unique key for the object in the database.
-        auth.currentUser?.let { user ->
-            db.child("events")
-                .child(user.uid)
-                .push()
-                .key?.let { uid ->
-                    // Insert the object in the database.
-                    db.child("events")
-                        .child(user.uid)
-                        .child(uid)
-                        .setValue(event)
-                }
+        viewModelScope.launch {
+            auth.currentUser?.let { user ->
+                db.child("copenhagen_buzz")
+                    .child("events")
+                    .push()
+                    .key?.let { key ->
+                        val event2 = Event2()
+                        event2.eventID = key
+                        event2.title = event.title
+                        event2.description = event.description
+                        event.eventID = key
+                        db.child("copenhagen_buzz")
+                            .child("events")
+                            .child(key)
+                            .setValue(event2)
+                            .addOnSuccessListener {
+                                Log.d("Fabricio", "Success")
+                            }
+                            .addOnCompleteListener {
+                                Log.d("Fabricio", "Completed")
+                            }
+                            .addOnCanceledListener {
+                                Log.d("Fabricio", "Canceled")
+                            }
+                            .addOnFailureListener { error ->
+                                Log.d("Fabricio", error.toString())
+                            }
+                    }
+            }
         }
     }
 
@@ -207,7 +241,8 @@ class DataViewModel(
             description = "",
             isFavorited = false,
             mainImage = "",
-            userID = "Created By getEmptyEvent"
+            userID = "Created By getEmptyEvent",
+            eventID = "empty"
         )
     }
 
