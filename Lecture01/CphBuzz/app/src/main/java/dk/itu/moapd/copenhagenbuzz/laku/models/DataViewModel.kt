@@ -159,19 +159,6 @@ class DataViewModel(
         _favorites.value = getFavorites()
     }
 
-    data class Event2(
-        var title: String? = null,
-        var location: String? = null,
-        var startDate: Long? = null,
-        var endDate: Long? = null,
-        var type: Int? = null,
-        var description: String? = null,
-        var isFavorited: Boolean? = null,
-        var mainImage: String? = null,
-        var userID: String? = null,
-        var eventID: String? = null
-    )
-
     fun createEvent(event: Event) {
         val events = _events.value?.toMutableList() ?: mutableListOf()
         events.add(event)
@@ -179,25 +166,30 @@ class DataViewModel(
 
         // If the user is authenticated, create a new unique key for the object in the database.
         viewModelScope.launch {
-            auth.currentUser?.let { user ->
+            auth.currentUser?.let { _ ->
                 db.child("copenhagen_buzz")
                     .child("events")
                     .push()
                     .key?.let { key ->
-                        val event2 = Event2()
-                        event2.eventID = key
-                        event2.title = event.title
-                        event2.description = event.description
                         event.eventID = key
                         db.child("copenhagen_buzz")
                             .child("events")
                             .child(key)
-                            .setValue(event2)
+                            .setValue(event)
                             .addOnSuccessListener {
                                 Log.d("Fabricio", "Success")
                             }
                             .addOnCompleteListener {
                                 Log.d("Fabricio", "Completed")
+                                Log.d("Event", (event.title ?: "null"))
+                                Log.d("Event", (event.eventID ?: "null"))
+                                Log.d("Event", (event.description ?: "null"))
+                                Log.d("Event", (event.location ?: "null"))
+                                Log.d("Event", (event.mainImage ?: "null"))
+                                Log.d("Event", (event.userID ?: "null"))
+                                Log.d("Event", (event.type.toString()))
+                                Log.d("Event", (event.endDate.toString() ?: "null"))
+                                Log.d("Event", (event.startDate.toString() ?: "null"))
                             }
                             .addOnCanceledListener {
                                 Log.d("Fabricio", "Canceled")

@@ -84,6 +84,17 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
      * Create and return a fresh create event dialog.
      */
     private fun buildCreateEventDialog(): androidx.appcompat.app.AlertDialog{
+        // Remove this when done testing
+        with(binding){
+            editTextEventName.setText("TestEvent")
+            editTextEventLocation.setText("TestLocation")
+            editTextEventDate.setText("Wed, May 15 2024")
+            autoCompleteEventTypes.setText(resources.getStringArray(R.array.event_types)[2])
+            editTextEventDescription.setText("Test Description")
+            editTextEventImage.setText("https://picsum.photos/seed/290/400/194")
+        }
+        // Remove above binding block
+
         return MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.create_event)
             .setView(binding.root)
@@ -268,10 +279,10 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
         // For the purposes of development I'm commenting out some of this functionality
         with(binding){
             editTextEventName.text.toString().isNotEmpty()          &&
-            // editTextEventLocation.text.toString().isNotEmpty()      &&
-            // editTextEventDate.text.toString().isNotEmpty()          &&
+            editTextEventLocation.text.toString().isNotEmpty()      &&
+            editTextEventDate.text.toString().isNotEmpty()          &&
             autoCompleteEventTypes.text.toString().isNotEmpty()     &&
-            // editTextEventDescription.text.toString().isNotEmpty()   &&
+            editTextEventDescription.text.toString().isNotEmpty()   &&
             editTextEventImage.text.toString().isNotEmpty()
         }
 
