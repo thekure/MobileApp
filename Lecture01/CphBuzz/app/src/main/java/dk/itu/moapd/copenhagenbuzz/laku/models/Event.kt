@@ -25,70 +25,20 @@
 
 package dk.itu.moapd.copenhagenbuzz.laku.models
 
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
-/**
- * This class denotes the different event types.
- * Matches the array of strings in strings.xml
- */
-enum class EventType {
-    BIRTHDAY,
-    WEDDING,
-    CONFERENCE
-}
-
 /**
  * Contains the relevant fields of an event object.
  */
 data class Event(
+    var eventID: String? = null,
+    var userID: String? = null,
     var title: String? = null,
     var location: String? = null,
     var startDate: Long? = null,
     var endDate: Long? = null,
+    var dateString: String? = null,
+    var typeString: String? = null,
     var type: Int? = null,
     var description: String? = null,
-    var isFavorited: Boolean? = null,
     var mainImage: String? = null,
-    var userID: String? = null,
-    var eventID: String? = null
-) {
-
-    /**
-     * Custom toString function.
-     */
-    override fun toString(): String {
-        return "Event (eventName = ’$title’, " +
-                "location = ’$location’) " +
-                "date = ’${getDateString()}’) " +
-                "type = ’${getTypeAsString()}’) " +
-                "description = ’$description’)"
-    }
-
-    fun getTypeAsString(): String{
-        return when (type){
-            0 -> EventType.BIRTHDAY.toString()
-            1 -> EventType.WEDDING.toString()
-            2 -> EventType.CONFERENCE.toString()
-            else  -> "Not a type" // This will never happen.
-        }
-    }
-
-    /**
-     * Helper function to convert dates from long to string.
-     */
-    fun getDateString(): String{
-        /**
-         * Defines the wanted display format for the dates.
-         * Currently set to: EEE, MMM dd yyyy.
-         */
-        val dateFormat = SimpleDateFormat("EEE, MMM dd yyyy", Locale.ENGLISH)
-        val startDateAsString = dateFormat.format(Date(startDate!!))
-        val endDateAsString = dateFormat.format(Date(endDate!!))
-
-        if(startDateAsString == endDateAsString) return startDateAsString
-
-        return "$startDateAsString - $endDateAsString"
-    }
-}
+    var isFavorited: Boolean? = null
+)

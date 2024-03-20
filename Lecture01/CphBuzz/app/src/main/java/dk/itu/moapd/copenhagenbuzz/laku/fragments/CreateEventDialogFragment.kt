@@ -15,7 +15,6 @@ import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.DialogCreateEventBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
-import dk.itu.moapd.copenhagenbuzz.laku.models.EventType
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -23,8 +22,8 @@ import java.util.Locale
 class CreateEventDialogFragment(private val isEdit: Boolean = false, private val position: Int = -1) : DialogFragment() {
     private var _binding: DialogCreateEventBinding? = null
     private lateinit var model: DataViewModel
-    private var dates: LongArray = longArrayOf(0, 0)
-    private var type: String = ""
+    private var startDateFromSelection: Long? = null
+    private var endDateFromSelection: Long? = null
     private val binding
         get() = requireNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
@@ -53,13 +52,12 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
      */
     private fun buildEditEventDialog(): androidx.appcompat.app.AlertDialog {
         val event = model.getEvent(position)
-        val eventType = resources.getStringArray(R.array.event_types)[event.type!!]
 
         with(binding){
             editTextEventName.setText(event.title)
             editTextEventLocation.setText(event.location)
-            editTextEventDate.setText(event.getDateString())
-            autoCompleteEventTypes.setText(eventType, false)
+            editTextEventDate.setText(event.dateString)
+            autoCompleteEventTypes.setText(event.typeString, false)
             editTextEventDescription.setText(event.description)
             editTextEventImage.setText(event.mainImage)
         }
@@ -74,7 +72,7 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
             .create().apply {
                 setOnShowListener {
                     getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                        if(editEventFromFields(position)) dismiss()
+                        if(editEventFromFields(event)) dismiss()
                     }
                 }
             }
@@ -169,8 +167,8 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
 
         datePicker.addOnPositiveButtonClickListener { selection ->
 
-            dates[0] = selection.first
-            dates[1] = selection.second
+            startDateFromSelection = selection.first
+            endDateFromSelection = selection.second
 
             with(binding.editTextEventDate){
                 setText(getDateString(selection.first, selection.second))
@@ -182,7 +180,8 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
     /**
      * Helper function to convert dates from long to string.
      */
-    private fun getDateString(startDate: Long, endDate: Long): String{
+    private fun getDateString(startDate: Long?, endDate: Long?): String{
+        if(startDate == null || endDate == null) return ""
         /**
          * Defines the wanted display format for the dates.
          * Currently set to: EEE, MMM dd yyyy.
@@ -207,17 +206,18 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
             // Only execute the following code when the user fills all fields
             if (checkInputValidity()) {
                 val event = Event(
-                    editTextEventName.text.toString().trim(),
-                    editTextEventLocation.text.toString().trim(),
-                    dates[0], // startDate as Long
-                    dates[1], // endDate as Long
-                    getTypeIndex(autoCompleteEventTypes.text.toString()),
-                    editTextEventDescription.text.toString().trim(),
-                    false,
-                    editTextEventImage.text.toString().trim(),
-                    model.getUser()!!.uid,
-                    "not_generated_yet"
+                    userID = model.getUser()!!.uid,
+                    title = editTextEventName.text.toString().trim(),
+                    location = editTextEventLocation.text.toString().trim(),
+                    startDate = startDateFromSelection,
+                    endDate = endDateFromSelection,
+                    dateString = getDateString(startDateFromSelection, endDateFromSelection),
+                    typeString = autoCompleteEventTypes.text.toString(),
+                    description = editTextEventDescription.text.toString().trim(),
+                    mainImage = editTextEventImage.text.toString().trim(),
                 )
+
+                event.type = getTypeIndex(event.typeString!!)
 
                 model.createEvent(event)
                 hideKeyboard()
@@ -236,24 +236,21 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
      * - Notifies user with a snack bar
      * - If fields are filled incorrectly, notifies user with a toast
      */
-    private fun editEventFromFields(position: Int): Boolean{
+    private fun editEventFromFields(event: Event): Boolean{
         with(binding) {
             // Only execute the following code when the user fills all fields
             if (checkInputValidity()) {
-                val event = Event(
-                    editTextEventName.text.toString().trim(),
-                    editTextEventLocation.text.toString().trim(),
-                    dates[0], // startDate as Long
-                    dates[1], // endDate as Long
-                    getTypeIndex(autoCompleteEventTypes.text.toString()),
-                    editTextEventDescription.text.toString().trim(),
-                    false,
-                    editTextEventImage.text.toString().trim(),
-                    model.getUser()!!.uid,
-                    model.getEvent(position).eventID
-                )
+                event.title = editTextEventName.text.toString().trim()
+                event.location = editTextEventLocation.text.toString().trim()
+                event.startDate = startDateFromSelection
+                event.endDate = endDateFromSelection
+                event.dateString = getDateString(startDateFromSelection, endDateFromSelection)
+                event.typeString = autoCompleteEventTypes.text.toString()
+                event.description = editTextEventDescription.text.toString().trim()
+                event.mainImage = editTextEventImage.text.toString().trim()
+                event.type = getTypeIndex(event.typeString!!)
 
-                model.updateEvent(position, event)
+                model.updateEvent(event)
                 hideKeyboard()
                 showToast("Event updated.")
                 return true
@@ -276,7 +273,6 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
      * Checks that all required fields have content before event creation.
      */
     private fun checkInputValidity(): Boolean =
-        // For the purposes of development I'm commenting out some of this functionality
         with(binding){
             editTextEventName.text.toString().isNotEmpty()          &&
             editTextEventLocation.text.toString().isNotEmpty()      &&
@@ -287,12 +283,15 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
         }
 
     private fun getTypeIndex(type: String): Int{
-        return when (type){
-            "Birthday" -> 0
-            "Wedding" -> 1
-            "Conference" -> 2
-            else -> -1 // This won't happen.
+        val eventTypeArray = resources.getStringArray(R.array.event_types)
+        val eventTypeMap = mutableMapOf<String, Int>()
+
+        for (i in eventTypeArray.indices) {
+            val eventType = eventTypeArray[i]
+            eventTypeMap[eventType] = i
         }
+
+        return eventTypeMap[type]!!
     }
 
     private fun hideKeyboard() {

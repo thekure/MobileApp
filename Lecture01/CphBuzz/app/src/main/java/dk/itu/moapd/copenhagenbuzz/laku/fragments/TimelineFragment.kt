@@ -44,7 +44,7 @@ class TimelineFragment : Fragment() {
                 events,
                 favoritedListener = { position ->
                     val event = _model.events.value?.get(position)
-                    _model.invertIsFavorited(event!!)
+                    _model.removeFromFavorites(event!!)
                 },
                 this::showEditEventDialog,
                 _model.getUser()

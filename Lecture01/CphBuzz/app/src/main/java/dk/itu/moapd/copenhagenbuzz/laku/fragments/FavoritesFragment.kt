@@ -45,7 +45,7 @@ class FavoritesFragment : Fragment() {
                     favorites,
                     favoritedListener = { position ->
                         val event = _model.favorites.value?.get(position)
-                        _model.invertIsFavorited(event!!)
+                        _model.removeFromFavorites(event!!)
                     },
                     _model.getUser()
                 )

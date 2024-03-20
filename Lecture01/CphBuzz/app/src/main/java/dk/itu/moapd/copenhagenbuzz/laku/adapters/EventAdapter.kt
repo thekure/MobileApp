@@ -99,21 +99,21 @@ class EventAdapter(
     }
 
     private fun handleFavorites(viewHolder: ViewHolder, event: Event) {
-        viewHolder.favoriteBtn.setIconResource(
+        /*viewHolder.favoriteBtn.setIconResource(
             if (event.isFavorited!!) R.drawable.baseline_favorite_24
             else R.drawable.outline_favorite_border_24
         )
 
-        if(user == null || user.isAnonymous) viewHolder.favoriteBtn.visibility = View.GONE
+        if(user == null || user.isAnonymous) viewHolder.favoriteBtn.visibility = View.GONE*/
     }
 
     private fun setText(viewHolder: ViewHolder, event: Event) {
         with(viewHolder){
             title.text = event.title
-            type.text = event.getTypeAsString()
+            type.text = event.typeString
             description.text = event.description
             location.text = event.location
-            date.text = event.getDateString()
+            date.text = event.dateString
         }
     }
 

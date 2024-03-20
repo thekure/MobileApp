@@ -32,6 +32,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import dk.itu.moapd.copenhagenbuzz.laku.DATABASE_URL
+import dk.itu.moapd.copenhagenbuzz.laku.repositories.EventRepository
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import java.util.Calendar
@@ -71,147 +72,70 @@ class DataViewModel(
     // Initialize Firebase Auth and connect to the Firebase Realtime Database.
     private val auth = FirebaseAuth.getInstance()
     private val db = Firebase.database(DATABASE_URL).reference
+    private val repository = EventRepository()
 
     init{
-        fetchEvents()
+        initCollections()
+        startListeningForEvents()
+        startListeningForFavorites()
     }
 
-    private fun fetchEvents() {
+    private fun initCollections(){
         viewModelScope.launch {
             try {
-                _events.value = generateDummyEvents()
-                _favorites.value = getFavorites()
-            } catch (e: Exception){
-                println("Couldn't fetch events: $e")
+                repository.initEventCollection { events ->
+                    _events.postValue(events)
+                }
+
+                repository.initFavoriteCollection { favorites ->
+                    _favorites.postValue(favorites)
+                }
+            } catch (e: Exception) {
+                println("Couldn't initialize collections: $e")
             }
         }
-
     }
 
-    private fun generateDummyEvents(): List<Event> {
-        // Generate dummy events here
-        val faker = Faker()
-        val eventList = mutableListOf<Event>()
-        repeat(2) {
-            val number = Random.nextInt(1, 501)
-            val dates = getFakeDates()
-
-            val event = Event(
-                title = faker.lorem().word(),
-                location = faker.address().city(),
-                startDate = dates.first,
-                endDate = dates.second,
-                type = Random.nextInt(0, 2),
-                description = faker.lorem().word(),
-                isFavorited = false,
-                mainImage = "https://picsum.photos/seed/$number/400/194",
-                "Faker",
-                eventID = "fake"
-            )
-            eventList.add(event)
+    private fun startListeningForEvents() {
+        repository.listenForEvents { events ->
+            _events.postValue(events)
         }
-        repeat(2) {
-            val number = Random.nextInt(1, 501)
-            val dates = getFakeDates()
-            val event = Event(
-                title = faker.lorem().word(),
-                location = faker.address().city(),
-                startDate = dates.first,
-                endDate = dates.second,
-                type = Random.nextInt(0, 2),
-                description = faker.lorem().word(),
-                isFavorited = true,
-                mainImage = "https://picsum.photos/seed/$number/400/194",
-                "Faker",
-                eventID = "fake"
-            )
-            eventList.add(event)
+    }
+
+    private fun startListeningForFavorites() {
+        repository.listenForFavorites { favorites ->
+            _favorites.postValue(favorites)
         }
-        return eventList
-    }
-
-    private fun getFakeDates(): Pair<Long, Long>{
-        // Get the current date
-        var cal = Calendar.getInstance()
-        val seed = Random.nextInt(1, 31)
-        cal.add(Calendar.DAY_OF_YEAR, seed)
-        val startDateDate = cal.time
-
-        // Add a random number of days (up to 7) to the first date to get the second date
-        cal = Calendar.getInstance()
-        cal.time = startDateDate
-        cal.add(Calendar.DAY_OF_YEAR, Random.nextInt(1, 8))
-        val endDateDate = cal.time
-
-        // Convert dates to Long values (milliseconds since the Unix epoch)
-        val startDate = startDateDate.time
-        val endDate = endDateDate.time
-
-        return Pair(startDate, endDate)
-    }
-
-    private fun getFavorites(): List<Event> {
-        return _events.value?.filter { it.isFavorited!! } ?: emptyList()
-    }
-
-    fun invertIsFavorited(event: Event) {
-        event.isFavorited = !event.isFavorited!!
-        _favorites.value = getFavorites()
     }
 
     fun createEvent(event: Event) {
-        val events = _events.value?.toMutableList() ?: mutableListOf()
-        events.add(event)
-        _events.postValue(events)
-
-        // If the user is authenticated, create a new unique key for the object in the database.
         viewModelScope.launch {
-            auth.currentUser?.let { _ ->
-                db.child("copenhagen_buzz")
-                    .child("events")
-                    .push()
-                    .key?.let { key ->
-                        event.eventID = key
-                        db.child("copenhagen_buzz")
-                            .child("events")
-                            .child(key)
-                            .setValue(event)
-                            .addOnSuccessListener {
-                                Log.d("Fabricio", "Success")
-                            }
-                            .addOnCompleteListener {
-                                Log.d("Fabricio", "Completed")
-                                Log.d("Event", (event.title ?: "null"))
-                                Log.d("Event", (event.eventID ?: "null"))
-                                Log.d("Event", (event.description ?: "null"))
-                                Log.d("Event", (event.location ?: "null"))
-                                Log.d("Event", (event.mainImage ?: "null"))
-                                Log.d("Event", (event.userID ?: "null"))
-                                Log.d("Event", (event.type.toString()))
-                                Log.d("Event", (event.endDate.toString() ?: "null"))
-                                Log.d("Event", (event.startDate.toString() ?: "null"))
-                            }
-                            .addOnCanceledListener {
-                                Log.d("Fabricio", "Canceled")
-                            }
-                            .addOnFailureListener { error ->
-                                Log.d("Fabricio", error.toString())
-                            }
-                    }
+            try {
+                repository.createEvent(event)
+            } catch (e: Exception) {
+                // Handle error
             }
         }
     }
 
-    fun updateEvent(position: Int, updatedEvent: Event){
-        val events = _events.value?.toMutableList() ?: mutableListOf()
-        events[position] = updatedEvent
-        _events.postValue(events)
+    fun updateEvent(event: Event){
+        viewModelScope.launch {
+            try {
+                repository.updateEvent(event)
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
 
     }
 
     fun getEvent(position: Int): Event {
         val events = _events.value?.toMutableList() ?: mutableListOf()
         return events[position]
+    }
+
+    fun removeFromFavorites(event: Event){
+        TODO()
     }
 
     fun getUser():FirebaseUser? {
@@ -223,31 +147,9 @@ class DataViewModel(
         return !(user == null || user.isAnonymous)
     }
 
-    fun getEmptyEvent(): Event{
-        return Event(
-            title = "",
-            location = "",
-            startDate = 0,
-            endDate = 0,
-            type = Random.nextInt(0, 2),
-            description = "",
-            isFavorited = false,
-            mainImage = "",
-            userID = "Created By getEmptyEvent",
-            eventID = "empty"
-        )
+    override fun onCleared() {
+        super.onCleared()
+        repository.removeEventListeners()
     }
 
-  /*
-     {
-      "Title": "Test",
-      "Location": "Fart City",
-      "StartDate": 1677897600000,
-      "EndDate": 1677984000000,
-      "Type": 1,
-      "Description": "Some random text",
-      "ImageURL": "https://picsum.photos/seed/173/400/194",
-      "UserID": ""
-     }
-  */
 }
