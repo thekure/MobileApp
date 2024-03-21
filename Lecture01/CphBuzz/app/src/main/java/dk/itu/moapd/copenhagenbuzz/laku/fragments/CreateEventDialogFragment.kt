@@ -48,37 +48,6 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
     }
 
     /**
-     * Create and return an edit event dialog.
-     */
-    private fun buildEditEventDialog(): androidx.appcompat.app.AlertDialog {
-        val event = model.getEvent(position)
-
-        with(binding){
-            editTextEventName.setText(event.title)
-            editTextEventLocation.setText(event.location)
-            editTextEventDate.setText(event.dateString)
-            autoCompleteEventTypes.setText(event.typeString, false)
-            editTextEventDescription.setText(event.description)
-            editTextEventImage.setText(event.mainImage)
-        }
-
-        return MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.edit_event)
-            .setView(binding.root)
-            .setPositiveButton(R.string.save, null)
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .create().apply {
-                setOnShowListener {
-                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                        if(editEventFromFields(event)) dismiss()
-                    }
-                }
-            }
-    }
-
-    /**
      * Create and return a fresh create event dialog.
      */
     private fun buildCreateEventDialog(): androidx.appcompat.app.AlertDialog{
@@ -106,92 +75,6 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
                     }
                 }
             }
-    }
-
-    /**
-     * Sets the correct values for the dropdown component.
-     * Event types are provided as a string array in strings.xml and are defined as enums in
-     * Event.kt. The dropdown component is an AutoCompleteTextView, which has a setAdapter function
-     * to specify the input of the dropdown values.
-     * - Loads string array with the event types.
-     * - Instantiates a correct adapter.
-     * - Updates the component with the new adapter.
-     */
-    private fun eventTypeSetup(){
-        val eventTypes = resources.getStringArray(R.array.event_types)
-        val arrayAdapter = ArrayAdapter(
-            requireContext(),
-            R.layout.event_type_dropdown,
-            eventTypes
-        )
-
-        with(binding.autoCompleteEventTypes){
-            setAdapter(arrayAdapter)
-            setOnItemClickListener { _, _, _, _ ->
-                hideKeyboard()
-            }
-        }
-
-    }
-
-    /**
-     * Sets up the user interface components by attaching relevant listeners to the
-     * necessary components. These listeners have dedicated handler functions.
-     */
-    private fun setListeners() {
-        with(binding) {
-            editTextEventDate.setOnFocusChangeListener { _, hasFocus ->
-                if (hasFocus){
-                    handleDatePickerAction()
-                }
-            }
-        }
-    }
-
-    /**
-     * Handler function for the date picker component.
-     * Instantiates a date range picker, and sets a listener for positive button click in
-     * the picker. User selection generates a pair of dates in utc millisecond format.
-     * - Uses the SimpleDateFormat library to define the intended string format for the UI.
-     * - Converts from utc milliseconds -> date -> string
-     * - Sets the UI text to the date.
-     * - Removes users focus from the component.
-     */
-    private fun handleDatePickerAction(){
-        val datePicker =
-            MaterialDatePicker.Builder.dateRangePicker()
-                .setTitleText("Select dates")
-                .build()
-        datePicker.show(parentFragmentManager, "tag")
-
-        datePicker.addOnPositiveButtonClickListener { selection ->
-
-            startDateFromSelection = selection.first
-            endDateFromSelection = selection.second
-
-            with(binding.editTextEventDate){
-                setText(getDateString(selection.first, selection.second))
-                clearFocus()
-            }
-        }
-    }
-
-    /**
-     * Helper function to convert dates from long to string.
-     */
-    private fun getDateString(startDate: Long?, endDate: Long?): String{
-        if(startDate == null || endDate == null) return ""
-        /**
-         * Defines the wanted display format for the dates.
-         * Currently set to: EEE, MMM dd yyyy.
-         */
-        val dateFormat = SimpleDateFormat("EEE, MMM dd yyyy", Locale.ENGLISH)
-        val startDateAsString = dateFormat.format(Date(startDate))
-        val endDateAsString = dateFormat.format(Date(endDate))
-
-        if(startDateAsString == endDateAsString) return startDateAsString
-
-        return "$startDateAsString - $endDateAsString"
     }
 
     /**
@@ -230,6 +113,37 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
     }
 
     /**
+     * Create and return an edit event dialog.
+     */
+    private fun buildEditEventDialog(): androidx.appcompat.app.AlertDialog {
+        val event = model.getEvent(position)
+
+        with(binding){
+            editTextEventName.setText(event.title)
+            editTextEventLocation.setText(event.location)
+            editTextEventDate.setText(event.dateString)
+            autoCompleteEventTypes.setText(event.typeString, false)
+            editTextEventDescription.setText(event.description)
+            editTextEventImage.setText(event.mainImage)
+        }
+
+        return MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.edit_event)
+            .setView(binding.root)
+            .setPositiveButton(R.string.save, null)
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create().apply {
+                setOnShowListener {
+                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        if(editEventFromFields(event)) dismiss()
+                    }
+                }
+            }
+    }
+
+    /**
      * Handler function for the edit event button.
      * - Edits existing event if all fields have content.
      * - Notifies user with a snack bar
@@ -260,12 +174,72 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
         }
     }
 
-    private fun showToast(message: String){
-        Toast.makeText(
+    /**
+     * Handler function for the date picker component.
+     * Instantiates a date range picker, and sets a listener for positive button click in
+     * the picker. User selection generates a pair of dates in utc millisecond format.
+     * - Uses the SimpleDateFormat library to define the intended string format for the UI.
+     * - Converts from utc milliseconds -> date -> string
+     * - Sets the UI text to the date.
+     * - Removes users focus from the component.
+     */
+    private fun handleDatePickerAction(){
+        val datePicker =
+            MaterialDatePicker.Builder.dateRangePicker()
+                .setTitleText("Select dates")
+                .build()
+        datePicker.show(parentFragmentManager, "tag")
+
+        datePicker.addOnPositiveButtonClickListener { selection ->
+
+            startDateFromSelection = selection.first
+            endDateFromSelection = selection.second
+
+            with(binding.editTextEventDate){
+                setText(getDateString(selection.first, selection.second))
+                clearFocus()
+            }
+        }
+    }
+
+    /**
+     * Sets up the user interface components by attaching relevant listeners to the
+     * necessary components. These listeners have dedicated handler functions.
+     */
+    private fun setListeners() {
+        with(binding) {
+            editTextEventDate.setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus){
+                    handleDatePickerAction()
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets the correct values for the dropdown component.
+     * Event types are provided as a string array in strings.xml and are defined as enums in
+     * Event.kt. The dropdown component is an AutoCompleteTextView, which has a setAdapter function
+     * to specify the input of the dropdown values.
+     * - Loads string array with the event types.
+     * - Instantiates a correct adapter.
+     * - Updates the component with the new adapter.
+     */
+    private fun eventTypeSetup(){
+        val eventTypes = resources.getStringArray(R.array.event_types)
+        val arrayAdapter = ArrayAdapter(
             requireContext(),
-            message,
-            Toast.LENGTH_SHORT
-        ).show()
+            R.layout.event_type_dropdown,
+            eventTypes
+        )
+
+        with(binding.autoCompleteEventTypes){
+            setAdapter(arrayAdapter)
+            setOnItemClickListener { _, _, _, _ ->
+                hideKeyboard()
+            }
+        }
+
     }
 
     /**
@@ -291,6 +265,32 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
         }
 
         return eventTypeMap[type]!!
+    }
+
+    /**
+     * Helper function to convert dates from long to string.
+     */
+    private fun getDateString(startDate: Long?, endDate: Long?): String{
+        if(startDate == null || endDate == null) return ""
+        /**
+         * Defines the wanted display format for the dates.
+         * Currently set to: EEE, MMM dd yyyy.
+         */
+        val dateFormat = SimpleDateFormat("EEE, MMM dd yyyy", Locale.ENGLISH)
+        val startDateAsString = dateFormat.format(Date(startDate))
+        val endDateAsString = dateFormat.format(Date(endDate))
+
+        if(startDateAsString == endDateAsString) return startDateAsString
+
+        return "$startDateAsString - $endDateAsString"
+    }
+
+    private fun showToast(message: String){
+        Toast.makeText(
+            requireContext(),
+            message,
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     private fun hideKeyboard() {
