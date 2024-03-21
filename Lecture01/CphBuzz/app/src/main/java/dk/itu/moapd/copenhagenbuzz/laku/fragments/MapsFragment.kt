@@ -1,11 +1,13 @@
 package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.FragmentMapsBinding
+import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 
 class MapsFragment : Fragment() {
     private var _binding: FragmentMapsBinding? = null

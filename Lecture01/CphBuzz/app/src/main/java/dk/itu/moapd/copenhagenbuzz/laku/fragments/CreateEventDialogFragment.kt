@@ -116,7 +116,7 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
      * Create and return an edit event dialog.
      */
     private fun buildEditEventDialog(): androidx.appcompat.app.AlertDialog {
-        val event = model.getEvent(position)
+        val event = model.getEventAtIndex(position)
 
         with(binding){
             editTextEventName.setText(event.title)

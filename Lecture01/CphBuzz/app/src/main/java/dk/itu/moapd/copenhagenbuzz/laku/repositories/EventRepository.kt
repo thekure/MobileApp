@@ -1,7 +1,6 @@
 package dk.itu.moapd.copenhagenbuzz.laku.repositories
 
 import android.util.Log
-import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
@@ -10,7 +9,8 @@ import dk.itu.moapd.copenhagenbuzz.laku.DATABASE_URL
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import dk.itu.moapd.copenhagenbuzz.laku.models.EventOperation
 import dk.itu.moapd.copenhagenbuzz.laku.models.EventOperation.*
-import kotlinx.coroutines.launch
+import dk.itu.moapd.copenhagenbuzz.laku.models.FavoriteOperation
+import dk.itu.moapd.copenhagenbuzz.laku.models.FavoriteOperation.Operation.*
 import kotlinx.coroutines.tasks.await
 
 class EventRepository {
@@ -24,11 +24,11 @@ class EventRepository {
 
     fun createEvent(event: Event) {
         auth.currentUser?.let {
-            db.child("events")
+            eventsRef
                 .push()
                 .key?.let { key ->
                     event.eventID = key
-                    db.child("events")
+                    eventsRef
                         .child(key)
                         .setValue(event)
                         .addOnSuccessListener {
@@ -39,35 +39,100 @@ class EventRepository {
     }
 
     fun updateEvent(event: Event) {
-        event.eventID?.let { eventId ->
-            db.child("events").child(eventId).setValue(event)
+        auth.currentUser?.let {
+            if(it.uid == event.userID){
+                event.eventID?.let { eventID ->
+                    eventsRef
+                        .child(eventID)
+                        .setValue(event)
+                        .addOnSuccessListener {
+                            Log.d("DATABASE", "Created updated successfully.")
+                        }
+                }
+            }
         }
     }
 
     fun deleteEvent(eventId: String) {
-        db.child("events").child(eventId).removeValue()
+        eventsRef
+            .child(eventId)
+            .removeValue()
     }
 
-    suspend fun readAllEvents(): DataSnapshot {
-        return eventsRef.get().await()
+    suspend fun readAllEvents(callback: (List<Event>) -> Unit) {
+        val snapshot = eventsRef.get().await()
+        val events = mutableListOf<Event>()
+        snapshot.children.forEach { eventSnapshot ->
+            val event = eventSnapshot.getValue(Event::class.java)
+            event?.let {
+                events.add(it)
+            }
+        }
+
+        callback(events)
     }
 
-    suspend fun readEvent(eventId: String, listener: ValueEventListener) {
-        db.child("events").child(eventId).addListenerForSingleValueEvent(listener)
+    suspend fun readEvent(eventID: String): Event? {
+        val snapshot = eventsRef.child(eventID).get().await()
+        return snapshot.getValue(Event::class.java)
     }
 
-    // Favorites CRUD operations
+    suspend fun readAllFavorites(callback: (List<Event>) -> Unit) {
+        val user = auth.currentUser
+        if(user != null && !user.isAnonymous){
+            val snapshot = favoritesRef.child(user.uid).get().await()
+            val favoriteIDs = mutableListOf<String>()
+            snapshot.children.forEach { favoriteSnapshot ->
+                val eventID = favoriteSnapshot.getValue(String::class.java)
+                eventID?.let {
+                    favoriteIDs.add(it)
+                }
+            }
 
-    suspend fun addFavorite(userId: String, favoriteID: String) {
-        db.child("favorites").child(userId).push().setValue(favoriteID)
+            favoriteIDs.forEach { id ->
+
+            }
+
+            val favorites = mutableListOf<Event>()
+
+
+            favoriteIDs.forEach { id ->
+                val event = readEvent(id)
+                if(event != null) favorites.add(event)
+            }
+
+            favorites.forEach { event ->
+
+            }
+
+            callback(favorites)
+        }
+    }
+
+
+
+
+    fun createFavorite(event: Event) {
+        val user = auth.currentUser
+
+        user?.let {
+            favoritesRef
+                .push()
+                .key?.let { _ ->
+                    favoritesRef
+                        .child(user.uid)
+                        .child(event.eventID!!)
+                        .setValue(event.eventID)
+                }
+        }
     }
 
     fun removeFavorite(userId: String, favoriteId: String) {
-        db.child("favorites").child(userId).child(favoriteId).removeValue()
+        favoritesRef.child(userId).child(favoriteId).removeValue()
     }
 
     fun getFavorites(userId: String, listener: ValueEventListener) {
-        db.child("favorites").child(userId).addListenerForSingleValueEvent(listener)
+        favoritesRef.child(userId).addListenerForSingleValueEvent(listener)
     }
 
     private fun initEventListener(callback: (EventOperation) -> Unit){
@@ -105,13 +170,18 @@ class EventRepository {
         }
     }
 
-    private fun initFavoritesListener(callback: (EventOperation) -> Unit){
+    private fun initFavoritesListener(callback: (FavoriteOperation) -> Unit){
         favoritesListener = object : ChildEventListener {
             // Convert DataSnapshot to Event and update DataViewModel with the new event
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                val event = snapshot.getValue(Event::class.java)
-                event?.let {
-                    callback(EventOperation(Operation.CREATE, listOf(it)))
+                val user = auth.currentUser
+                user?.let {
+                    val map: HashMap<String, Any>? = snapshot.getValue(object : GenericTypeIndicator<HashMap<String, Any>>() {})
+                    val keys: List<String>? = map?.keys?.toList()
+
+                    keys?.let {
+                        callback(FavoriteOperation(ADD, it))
+                    }
                 }
             }
 
@@ -134,54 +204,12 @@ class EventRepository {
         }
     }
 
-    fun initEventCollection(callback: (List<Event>) -> Unit) {
-        // Fetch initial snapshot to load existing events
-        eventsRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val events = mutableListOf<Event>()
-                snapshot.children.forEach { eventSnapshot ->
-                    val event = eventSnapshot.getValue(Event::class.java)
-                    event?.let {
-                        events.add(it)
-                    }
-                }
-                // Callback to ViewModel with initial list of events
-                callback(events)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Handle error
-            }
-        })
-    }
-
-    fun initFavoriteCollection(callback: (List<Event>) -> Unit) {
-        // Fetch initial snapshot to load existing favorites
-        favoritesRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val favorites = mutableListOf<Event>()
-                snapshot.children.forEach { favoriteSnapshot ->
-                    val event = favoriteSnapshot.getValue(Event::class.java)
-                    event?.let {
-                        favorites.add(it)
-                    }
-                }
-                // Callback to ViewModel with initial list of favorites
-                callback(favorites)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Handle error
-            }
-        })
-    }
-
     fun listenForEvents(callback: (EventOperation) -> Unit) {
         initEventListener(callback)
         eventsRef.addChildEventListener(eventsListener)
     }
 
-    fun listenForFavorites(callback: (EventOperation) -> Unit){
+    fun listenForFavorites(callback: (FavoriteOperation) -> Unit){
         initFavoritesListener(callback)
         favoritesRef.addChildEventListener(favoritesListener)
     }

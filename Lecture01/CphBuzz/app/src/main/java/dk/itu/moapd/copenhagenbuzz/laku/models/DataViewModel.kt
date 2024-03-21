@@ -28,8 +28,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import dk.itu.moapd.copenhagenbuzz.laku.models.EventOperation.*
 import dk.itu.moapd.copenhagenbuzz.laku.models.EventOperation.Operation.*
+import dk.itu.moapd.copenhagenbuzz.laku.models.EventOperation.Operation.CREATE
+import dk.itu.moapd.copenhagenbuzz.laku.models.FavoriteOperation.Operation
+import dk.itu.moapd.copenhagenbuzz.laku.models.FavoriteOperation.Operation.*
 import dk.itu.moapd.copenhagenbuzz.laku.repositories.EventRepository
 import kotlinx.coroutines.launch
 import kotlin.Exception
@@ -76,11 +78,11 @@ class DataViewModel(
     private fun initCollections(){
         viewModelScope.launch {
             try {
-                _repo.initEventCollection { events ->
+                _repo.readAllEvents { events ->
                     _events.postValue(events)
                 }
 
-                _repo.initFavoriteCollection { favorites ->
+                _repo.readAllFavorites { favorites ->
                     _favorites.postValue(favorites)
                 }
             } catch (e: Exception) {
@@ -116,26 +118,29 @@ class DataViewModel(
 
     private fun startListeningForFavorites() {
         _repo.listenForFavorites { newFavorites ->
-            val favorites = _events.value?.toMutableList() ?: mutableListOf()
+            val favorites = _favorites.value?.toMutableList() ?: mutableListOf()
 
             newFavorites.events.forEach { newEvent ->
                 when(newFavorites.operation){
-                    CREATE -> {
-                        favorites.add(newEvent)
+                    ADD -> {
+                        viewModelScope.launch{
+                            try{
+                                val event = _repo.readEvent(newEvent)
+                                if(event != null) favorites.add(event)
+                            } catch (e: Exception){
+                                Log.d("DATABASE", "Couldn't retrieve favorite with that eventID")
+                            }
+                        }
                     }
 
-                    UPDATE -> {
-                        val index = favorites.indexOfFirst { it.eventID == newEvent.eventID }
-                        favorites[index] = newEvent
-                    }
-
-                    DELETE -> {
-                        val index = favorites.indexOfFirst { it.eventID == newEvent.eventID }
-                        favorites.removeAt(index)
+                    REMOVE -> {
+                        /*val index = favorites.indexOfFirst { it.eventID == newEvent.eventID }
+                        favorites.removeAt(index)*/
                     }
                 }
             }
-            _events.postValue(favorites)
+            Log.d("DATABASE", "End of listener")
+            _favorites.postValue(favorites)
         }
     }
 
@@ -157,12 +162,21 @@ class DataViewModel(
                 // Handle error
             }
         }
-
     }
 
-    fun getEvent(position: Int): Event {
+    fun getEventAtIndex(index: Int): Event {
         val events = _events.value?.toMutableList() ?: mutableListOf()
-        return events[position]
+        return events[index]
+    }
+
+    fun addToFavorites(event: Event){
+        viewModelScope.launch {
+            try {
+                _repo.createFavorite(event)
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
     }
 
     fun removeFromFavorites(event: Event){

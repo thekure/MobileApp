@@ -63,14 +63,12 @@ class EventAdapter(
      * - Sets listeners
      */
     private fun populateViewHolder(viewHolder: ViewHolder, event: Event, position: Int) {
-        with(viewHolder) {
-            // Fill out the Material Design card.
-            loadImages(viewHolder, event)       // Load images using Picasso
-            setText(viewHolder, event)          // Set text from Event
-            handleFavorites(viewHolder, event)  // Set icon for fave button
-            handleEditButton(viewHolder, event) // Set visibility based on login status
-            setListeners(viewHolder, position)  // Setup listeners for each button
-        }
+        // Fill out the Material Design card.
+        loadImages(viewHolder, event)       // Load images using Picasso
+        setText(viewHolder, event)          // Set text from Event
+        handleFavorites(viewHolder, event)  // Set icon for fave button
+        handleEditButton(viewHolder, event) // Set visibility based on login status
+        setListeners(viewHolder, position)  // Setup listeners for each button
     }
 
     private fun setListeners(viewHolder: ViewHolder, position: Int) {
@@ -80,7 +78,7 @@ class EventAdapter(
             }
 
             infoBtn.setOnClickListener {
-
+                TODO()
             }
 
             favoriteBtn.setOnClickListener {

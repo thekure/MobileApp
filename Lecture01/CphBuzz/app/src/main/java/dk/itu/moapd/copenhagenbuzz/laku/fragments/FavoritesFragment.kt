@@ -62,8 +62,6 @@ class FavoritesFragment : Fragment() {
                 notLoggedIn.visibility = View.VISIBLE
             }
         }
-
-
     }
 
     override fun onDestroyView() {

@@ -39,15 +39,15 @@ class TimelineFragment : Fragment() {
         _model = ViewModelProvider(requireActivity())[DataViewModel::class.java]
         _model.events.observe(viewLifecycleOwner){ events ->
             val adapter = EventAdapter(
-                requireContext(),
-                R.layout.event_row_item,
-                events,
+                context = requireContext(),
+                resource = R.layout.event_row_item,
+                data = events,
                 favoritedListener = { position ->
                     val event = _model.events.value?.get(position)
-                    _model.removeFromFavorites(event!!)
+                    _model.addToFavorites(event!!)
                 },
-                this::showEditEventDialog,
-                _model.getUser()
+                onEditEventClicked = this::showEditEventDialog,
+                user = _model.getUser()
             )
 
             binding.listViewTimeline.adapter = adapter
