@@ -68,7 +68,6 @@ class EventRepository {
                 events.add(it)
             }
         }
-
         callback(events)
     }
 
@@ -82,6 +81,7 @@ class EventRepository {
         if(user != null && !user.isAnonymous){
             val snapshot = favoritesRef.child(user.uid).get().await()
             val favoriteIDs = mutableListOf<String>()
+
             snapshot.children.forEach { favoriteSnapshot ->
                 val eventID = favoriteSnapshot.getValue(String::class.java)
                 eventID?.let {
@@ -89,28 +89,16 @@ class EventRepository {
                 }
             }
 
-            favoriteIDs.forEach { id ->
-
-            }
-
             val favorites = mutableListOf<Event>()
-
 
             favoriteIDs.forEach { id ->
                 val event = readEvent(id)
                 if(event != null) favorites.add(event)
             }
 
-            favorites.forEach { event ->
-
-            }
-
             callback(favorites)
         }
     }
-
-
-
 
     fun createFavorite(event: Event) {
         val user = auth.currentUser
@@ -141,10 +129,6 @@ class EventRepository {
                     Log.e("DATABASE", "Error removing favorite", error)
                 }
         }
-    }
-
-    fun getFavorites(userId: String, listener: ValueEventListener) {
-        favoritesRef.child(userId).addListenerForSingleValueEvent(listener)
     }
 
     private fun initEventListener(callback: (EventOperation) -> Unit){

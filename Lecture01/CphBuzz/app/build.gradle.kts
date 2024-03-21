@@ -50,6 +50,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:20.5.0")
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-database-ktx")
+    // FirebaseUI for Firebase Realtime Database
+    implementation ("com.firebaseui:firebase-ui-database:8.0.2")
 
     // Dotenv to access secrets
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")

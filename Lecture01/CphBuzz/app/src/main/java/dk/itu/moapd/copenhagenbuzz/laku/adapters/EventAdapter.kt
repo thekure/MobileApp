@@ -7,15 +7,13 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import com.firebase.ui.database.FirebaseListAdapter
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseUser
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.interfaces.FavoritedStatusProvider
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import kotlin.random.Random
 
 class EventAdapter(
@@ -29,7 +27,7 @@ class EventAdapter(
     context,
     R.layout.event_row_item,
     data
-) {
+){
 
     private class ViewHolder(view: View){
         val eventLetter: ImageView = view.findViewById(R.id.item_event_letter)
