@@ -87,7 +87,6 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
             editTextEventName.setText("TestEvent")
             editTextEventLocation.setText("TestLocation")
             editTextEventDate.setText("Wed, May 15 2024")
-            autoCompleteEventTypes.setText(resources.getStringArray(R.array.event_types)[2])
             editTextEventDescription.setText("Test Description")
             editTextEventImage.setText("https://picsum.photos/seed/290/400/194")
         }

@@ -26,17 +26,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.javafaker.Faker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
-import dk.itu.moapd.copenhagenbuzz.laku.DATABASE_URL
+import dk.itu.moapd.copenhagenbuzz.laku.models.EventOperation.*
+import dk.itu.moapd.copenhagenbuzz.laku.models.EventOperation.Operation.*
 import dk.itu.moapd.copenhagenbuzz.laku.repositories.EventRepository
 import kotlinx.coroutines.launch
-import java.lang.Exception
-import java.util.Calendar
-import kotlin.random.Random
+import kotlin.Exception
 
 
 class DataViewModel(
@@ -62,17 +58,14 @@ class DataViewModel(
         savedStateHandle.getLiveData(FAVORITE_EVENTS, ArrayList())
     }
 
+    private val _repo = EventRepository()
+
 
     /**
      * A LiveData object to hold a list of events.
      */
     val events: LiveData<List<Event>> = _events
     val favorites: LiveData<List<Event>> = _favorites
-
-    // Initialize Firebase Auth and connect to the Firebase Realtime Database.
-    private val auth = FirebaseAuth.getInstance()
-    private val db = Firebase.database(DATABASE_URL).reference
-    private val repository = EventRepository()
 
     init{
         initCollections()
@@ -83,11 +76,11 @@ class DataViewModel(
     private fun initCollections(){
         viewModelScope.launch {
             try {
-                repository.initEventCollection { events ->
+                _repo.initEventCollection { events ->
                     _events.postValue(events)
                 }
 
-                repository.initFavoriteCollection { favorites ->
+                _repo.initFavoriteCollection { favorites ->
                     _favorites.postValue(favorites)
                 }
             } catch (e: Exception) {
@@ -97,23 +90,61 @@ class DataViewModel(
     }
 
     private fun startListeningForEvents() {
-        repository.listenForEvents { events ->
+        _repo.listenForEvents { newEvents ->
+            val events = _events.value?.toMutableList() ?: mutableListOf()
+
+            newEvents.events.forEach { newEvent ->
+                when(newEvents.operation){
+                    CREATE -> {
+                        events.add(newEvent)
+                    }
+
+                    UPDATE -> {
+                        val index = events.indexOfFirst { it.eventID == newEvent.eventID }
+                        events[index] = newEvent
+                    }
+
+                    DELETE -> {
+                        val index = events.indexOfFirst { it.eventID == newEvent.eventID }
+                        events.removeAt(index)
+                    }
+                }
+            }
             _events.postValue(events)
         }
     }
 
     private fun startListeningForFavorites() {
-        repository.listenForFavorites { favorites ->
-            _favorites.postValue(favorites)
+        _repo.listenForFavorites { newFavorites ->
+            val favorites = _events.value?.toMutableList() ?: mutableListOf()
+
+            newFavorites.events.forEach { newEvent ->
+                when(newFavorites.operation){
+                    CREATE -> {
+                        favorites.add(newEvent)
+                    }
+
+                    UPDATE -> {
+                        val index = favorites.indexOfFirst { it.eventID == newEvent.eventID }
+                        favorites[index] = newEvent
+                    }
+
+                    DELETE -> {
+                        val index = favorites.indexOfFirst { it.eventID == newEvent.eventID }
+                        favorites.removeAt(index)
+                    }
+                }
+            }
+            _events.postValue(favorites)
         }
     }
 
     fun createEvent(event: Event) {
         viewModelScope.launch {
-            try {
-                repository.createEvent(event)
-            } catch (e: Exception) {
-                // Handle error
+            try{
+                _repo.createEvent(event)
+            } catch (e: Exception){
+                Log.d("DATABASE", "Couldn't create event")
             }
         }
     }
@@ -121,7 +152,7 @@ class DataViewModel(
     fun updateEvent(event: Event){
         viewModelScope.launch {
             try {
-                repository.updateEvent(event)
+                _repo.updateEvent(event)
             } catch (e: Exception) {
                 // Handle error
             }
@@ -149,7 +180,7 @@ class DataViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        repository.removeEventListeners()
+        _repo.removeEventListeners()
     }
 
 }

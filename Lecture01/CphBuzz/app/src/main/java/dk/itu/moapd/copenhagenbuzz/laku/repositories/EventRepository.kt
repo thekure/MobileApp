@@ -4,57 +4,35 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+import dk.itu.moapd.copenhagenbuzz.laku.DATABASE_URL
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
+import dk.itu.moapd.copenhagenbuzz.laku.models.EventOperation
+import dk.itu.moapd.copenhagenbuzz.laku.models.EventOperation.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class EventRepository {
 
     private val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseDatabase.getInstance().reference
-    private val eventsRef = db.child("copenhagen_buzz").child("events")
+    private val db = Firebase.database(DATABASE_URL).reference.child("copenhagen_buzz")
+    private val eventsRef = db.child("events")
     private lateinit var eventsListener : ChildEventListener
-    private val favoritesRef = db.child("copenhagen_buzz").child("favorites")
+    private val favoritesRef = db.child("favorites")
     private lateinit var favoritesListener : ChildEventListener
 
-    // Events CRUD operations
-
-    suspend fun createEvent(event: Event) {
-        auth.currentUser?.let { _ ->
-            db.child("copenhagen_buzz")
-                .child("events")
+    fun createEvent(event: Event) {
+        auth.currentUser?.let {
+            db.child("events")
                 .push()
                 .key?.let { key ->
                     event.eventID = key
-                    db.child("copenhagen_buzz")
-                        .child("events")
+                    db.child("events")
                         .child(key)
                         .setValue(event)
-                        .addOnCompleteListener {
-                            Log.d("Event", (event.title ?: "null"))
-                            Log.d("Event", (event.eventID ?: "null"))
-                            Log.d("Event", (event.description ?: "null"))
-                            Log.d("Event", (event.location ?: "null"))
-                            Log.d("Event", (event.mainImage ?: "null"))
-                            Log.d("Event", (event.userID ?: "null"))
-                            Log.d("Event", (event.type.toString()))
-                            Log.d("Event", (event.typeString ?: "null"))
-                            Log.d("Event", (event.endDate.toString() ?: "null"))
-                            Log.d("Event", (event.startDate.toString() ?: "null"))
-                            Log.d("Event", (event.dateString ?: "null"))
-                        }
-                        .addOnFailureListener {
-                            Log.d("Event", (event.title ?: "null"))
-                            Log.d("Event", (event.eventID ?: "null"))
-                            Log.d("Event", (event.description ?: "null"))
-                            Log.d("Event", (event.location ?: "null"))
-                            Log.d("Event", (event.mainImage ?: "null"))
-                            Log.d("Event", (event.userID ?: "null"))
-                            Log.d("Event", (event.type.toString()))
-                            Log.d("Event", (event.typeString ?: "null"))
-                            Log.d("Event", (event.endDate.toString() ?: "null"))
-                            Log.d("Event", (event.startDate.toString() ?: "null"))
-                            Log.d("Event", (event.dateString ?: "null"))
+                        .addOnSuccessListener {
+                            Log.d("DATABASE", "Created event successfully.")
                         }
                 }
         }
@@ -88,28 +66,33 @@ class EventRepository {
         db.child("favorites").child(userId).child(favoriteId).removeValue()
     }
 
-    fun getAllFavorites(userId: String, listener: ValueEventListener) {
+    fun getFavorites(userId: String, listener: ValueEventListener) {
         db.child("favorites").child(userId).addListenerForSingleValueEvent(listener)
     }
 
-    private fun initEventListener(callback: (List<Event>) -> Unit){
+    private fun initEventListener(callback: (EventOperation) -> Unit){
         eventsListener = object : ChildEventListener {
             // Convert DataSnapshot to Event and update DataViewModel with the new event
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val event = snapshot.getValue(Event::class.java)
                 event?.let {
-                    callback(listOf(it))
+                    callback(EventOperation(Operation.CREATE, listOf(it)))
                 }
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                // Handle event update
-                // You may want to update the existing event in the ViewModel
+
+                val updatedEvent = snapshot.getValue(Event::class.java)
+                updatedEvent?.let {
+                    callback(EventOperation(Operation.UPDATE, listOf(it)))
+                }
             }
 
             override fun onChildRemoved(snapshot: DataSnapshot) {
-                // Handle event removal
-                // You may want to remove the event from the ViewModel
+                val removedEvent = snapshot.getValue(Event::class.java)
+                removedEvent?.let {
+                    callback(EventOperation(Operation.DELETE, listOf(it)))
+                }
             }
 
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
@@ -122,13 +105,13 @@ class EventRepository {
         }
     }
 
-    private fun initFavoritesListener(callback: (List<Event>) -> Unit){
+    private fun initFavoritesListener(callback: (EventOperation) -> Unit){
         favoritesListener = object : ChildEventListener {
             // Convert DataSnapshot to Event and update DataViewModel with the new event
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val event = snapshot.getValue(Event::class.java)
                 event?.let {
-                    callback(listOf(it))
+                    callback(EventOperation(Operation.CREATE, listOf(it)))
                 }
             }
 
@@ -193,12 +176,12 @@ class EventRepository {
         })
     }
 
-    fun listenForEvents(callback: (List<Event>) -> Unit) {
+    fun listenForEvents(callback: (EventOperation) -> Unit) {
         initEventListener(callback)
         eventsRef.addChildEventListener(eventsListener)
     }
 
-    fun listenForFavorites(callback: (List<Event>) -> Unit){
+    fun listenForFavorites(callback: (EventOperation) -> Unit){
         initFavoritesListener(callback)
         favoritesRef.addChildEventListener(favoritesListener)
     }
