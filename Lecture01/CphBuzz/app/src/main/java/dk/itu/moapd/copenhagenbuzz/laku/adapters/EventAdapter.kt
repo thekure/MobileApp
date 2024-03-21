@@ -11,6 +11,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseUser
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
+import dk.itu.moapd.copenhagenbuzz.laku.interfaces.FavoritedStatusProvider
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -21,9 +22,9 @@ class EventAdapter(
     private val context: Context,
     private var resource: Int,
     private val data: List<Event>,
-    private val favoritedListener: (Int) -> Unit,
     private val onEditEventClicked: (Int) -> Unit,
-    private val user: FirebaseUser?
+    private val user: FirebaseUser?,
+    private val favoritedStatusProvider: FavoritedStatusProvider
 ): ArrayAdapter<Event>(
     context,
     R.layout.event_row_item,
@@ -82,7 +83,7 @@ class EventAdapter(
             }
 
             favoriteBtn.setOnClickListener {
-                favoritedListener.invoke(position)
+                favoritedStatusProvider.getFavoriteAddedListener().invoke(position)
                 notifyDataSetChanged()
             }
         }
@@ -97,12 +98,12 @@ class EventAdapter(
     }
 
     private fun handleFavorites(viewHolder: ViewHolder, event: Event) {
-        /*viewHolder.favoriteBtn.setIconResource(
-            if (event.isFavorited!!) R.drawable.baseline_favorite_24
+        viewHolder.favoriteBtn.setIconResource(
+            if (favoritedStatusProvider.isEventFavorited(event)) R.drawable.baseline_favorite_24
             else R.drawable.outline_favorite_border_24
         )
 
-        if(user == null || user.isAnonymous) viewHolder.favoriteBtn.visibility = View.GONE*/
+        if(user == null || user.isAnonymous) viewHolder.favoriteBtn.visibility = View.GONE
     }
 
     private fun setText(viewHolder: ViewHolder, event: Event) {

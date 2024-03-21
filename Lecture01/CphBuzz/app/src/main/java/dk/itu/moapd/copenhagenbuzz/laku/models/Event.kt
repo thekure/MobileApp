@@ -39,6 +39,5 @@ data class Event(
     var typeString: String? = null,
     var type: Int? = null,
     var description: String? = null,
-    var mainImage: String? = null,
-    var isFavorited: Boolean? = null
+    var mainImage: String? = null
 )

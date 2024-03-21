@@ -9,12 +9,13 @@ import com.google.firebase.auth.FirebaseUser
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.FavoriteRowItemBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import com.squareup.picasso.Picasso
+import dk.itu.moapd.copenhagenbuzz.laku.interfaces.FavoritedStatusProvider
 
 @SuppressLint("NotifyDataSetChanged")
 
 class FavoriteAdapter(
     private val data: List<Event>,
-    private val favoritedListener: (Int) -> Unit,
+    private val favoritedStatusProvider: FavoritedStatusProvider,
     private val user: FirebaseUser?
 ): RecyclerView.Adapter<FavoriteAdapter.ViewHolder>() {
 
@@ -44,7 +45,7 @@ class FavoriteAdapter(
         viewType: Int
     ): ViewHolder = FavoriteRowItemBinding
         .inflate(LayoutInflater.from(parent.context), parent, false)
-        .let{binding -> ViewHolder(binding, favoritedListener)}
+        .let{binding -> ViewHolder(binding, favoritedStatusProvider.getFavoriteRemovedListener())}
 
     override fun onBindViewHolder(
         holder: ViewHolder,

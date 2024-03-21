@@ -180,7 +180,18 @@ class DataViewModel(
     }
 
     fun removeFromFavorites(event: Event){
-        TODO()
+        viewModelScope.launch {
+            try {
+                _repo.removeFavorite(event)
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    fun isEventFavorited(event: Event): Boolean{
+        val favorites = _favorites.value?.toMutableList() ?: mutableListOf()
+        return favorites.contains(event)
     }
 
     fun getUser():FirebaseUser? {

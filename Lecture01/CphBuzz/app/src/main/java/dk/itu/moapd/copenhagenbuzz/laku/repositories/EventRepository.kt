@@ -127,8 +127,20 @@ class EventRepository {
         }
     }
 
-    fun removeFavorite(userId: String, favoriteId: String) {
-        favoritesRef.child(userId).child(favoriteId).removeValue()
+    fun removeFavorite(event: Event) {
+        val user = auth.currentUser
+        user?.let {
+            favoritesRef
+                .child(user.uid)
+                .child(event.eventID!!)
+                .removeValue()
+                .addOnSuccessListener {
+                    Log.d("DATABASE", "Favorite removed successfully.")
+                }
+                .addOnFailureListener { error ->
+                    Log.e("DATABASE", "Error removing favorite", error)
+                }
+        }
     }
 
     fun getFavorites(userId: String, listener: ValueEventListener) {
@@ -186,8 +198,18 @@ class EventRepository {
             }
 
             override fun onChildRemoved(snapshot: DataSnapshot) {
-                // Handle event removal
-                // You may want to remove the event from the ViewModel
+                val user = auth.currentUser
+                user?.let {
+                    val map: HashMap<String, Any>? = snapshot.getValue(object : GenericTypeIndicator<HashMap<String, Any>>() {})
+                    val keys: List<String>? = map?.keys?.toList()
+                    keys?.forEach { key ->
+                        Log.d("DATABASE", "Key: " + key)
+
+                    }
+                    keys?.let {
+                        callback(FavoriteOperation(REMOVE, it))
+                    }
+                }
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {

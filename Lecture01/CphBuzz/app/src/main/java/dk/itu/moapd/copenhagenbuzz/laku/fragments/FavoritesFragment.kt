@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import dk.itu.moapd.copenhagenbuzz.laku.adapters.FavoriteAdapter
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.FragmentFavoritesBinding
+import dk.itu.moapd.copenhagenbuzz.laku.interfaces.EventFavoriteStatusProvider
 import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 
 class FavoritesFragment : Fragment() {
@@ -37,17 +38,15 @@ class FavoritesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         _model = ViewModelProvider(requireActivity())[DataViewModel::class.java]
+        val favoritedStatusProvider = EventFavoriteStatusProvider(_model)
         val isValidUser = _model.loggedIn()
 
         if(isValidUser){
             _model.favorites.observe(viewLifecycleOwner) { favorites ->
                 val adapter = FavoriteAdapter(
-                    favorites,
-                    favoritedListener = { position ->
-                        val event = _model.favorites.value?.get(position)
-                        _model.removeFromFavorites(event!!)
-                    },
-                    _model.getUser()
+                    data = favorites,
+                    favoritedStatusProvider = favoritedStatusProvider,
+                    user = _model.getUser()
                 )
 
                 with(binding) {
