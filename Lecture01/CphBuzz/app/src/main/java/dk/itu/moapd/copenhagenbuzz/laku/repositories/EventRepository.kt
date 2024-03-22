@@ -217,36 +217,25 @@ class EventRepository {
                 Log.d("DATABASE", "Favorites listener triggered onChildAdded.")
                 val user = auth.currentUser
                 user?.let {
-                    val map: HashMap<String, Any>? = snapshot.getValue(object : GenericTypeIndicator<HashMap<String, Any>>() {})
-                    val keys: List<String>? = map?.keys?.toList()
-
-                    keys?.let {
-                        callback(FavoriteOperation(ADD, it))
+                    val eventID = snapshot.getValue(String::class.java)
+                    eventID?.let {
+                        callback(FavoriteOperation(ADD, listOf(it)))
                     }
                 }
             }
 
             /**
-             * Favorites are stored as strings in the favorites table. Because each entry needs to
-             * have a key though, these strings are stored in both the key and value position,
-             * making the table hold a HashMap<String, String>.
-             *
-             * When favorites are removed, this function gets the eventIDs by collecting the
-             * key set, and sending them back in a List<String>.
+             * Favorites are stored as strings in the favorites table. When a favorite is removed,
+             * this function gets the eventID from the snapshot sends it back in a List<String>.
              */
             override fun onChildRemoved(snapshot: DataSnapshot) {
                 Log.d("DATABASE", "Favorites listener triggered onChildRemoved.")
                 val user = auth.currentUser
                 user?.let {
-                    val map: HashMap<String, Any>? = snapshot.getValue(object : GenericTypeIndicator<HashMap<String, Any>>() {})
-                    val keys: List<String>? = map?.keys?.toList()
+                    val eventID = snapshot.getValue(String::class.java)
 
-                    keys?.forEach { key ->
-                        Log.d("DATABASE", "EventID to remove: $key")
-                    }
-
-                    keys?.let {
-                        callback(FavoriteOperation(REMOVE, it))
+                    eventID?.let {
+                        callback(FavoriteOperation(REMOVE, listOf(it)))
                     }
                 }
             }
@@ -286,7 +275,7 @@ class EventRepository {
      */
     fun listenForFavorites(callback: (FavoriteOperation) -> Unit){
         initFavoritesListener(callback)
-        favoritesRef.addChildEventListener(favoritesListener)
+        favoritesRef.child(auth.currentUser!!.uid).addChildEventListener(favoritesListener)
     }
 
     /**
