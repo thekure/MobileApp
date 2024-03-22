@@ -66,7 +66,20 @@ class EventRepository {
      * CRUD: Delete one event.
      */
     fun deleteEvent(event: Event) {
-        TODO()
+        val user = auth.currentUser
+        if(user != null && event.userID == user.uid){
+            user.let {
+                eventsRef
+                    .child(event.eventID!!)
+                    .removeValue()
+                    .addOnSuccessListener {
+                        Log.d("DATABASE", "Favorite removed successfully.")
+                    }
+                    .addOnFailureListener { error ->
+                        Log.e("DATABASE", "Error removing favorite", error)
+                    }
+            }
+        }
     }
 
     /**
@@ -275,6 +288,7 @@ class EventRepository {
      */
     fun listenForFavorites(callback: (FavoriteOperation) -> Unit){
         initFavoritesListener(callback)
+        // Listen on favorites/$uid path
         favoritesRef.child(auth.currentUser!!.uid).addChildEventListener(favoritesListener)
     }
 
