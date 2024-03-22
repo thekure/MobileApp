@@ -48,7 +48,7 @@ class TimelineFragment : Fragment() {
                 user = _model.getUser(),
                 favoritedStatusProvider = favoritedStatusProvider
             )
-
+            adapter.refreshData(events)
             binding.listViewTimeline.adapter = adapter
         }
     }

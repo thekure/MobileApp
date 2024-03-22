@@ -54,6 +54,8 @@ class FavoritesFragment : Fragment() {
                     recyclerView.adapter = adapter
                     notLoggedIn.visibility = View.GONE
                 }
+
+                adapter.refreshData(favorites)
             }
         } else {
             with(binding){

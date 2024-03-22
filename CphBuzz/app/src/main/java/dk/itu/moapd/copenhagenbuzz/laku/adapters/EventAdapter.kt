@@ -19,7 +19,7 @@ import kotlin.random.Random
 class EventAdapter(
     private val context: Context,
     private var resource: Int,
-    private val data: List<Event>,
+    private var data: List<Event>,
     private val onEditEventClicked: (Int) -> Unit,
     private val user: FirebaseUser?,
     private val favoritedStatusProvider: FavoritedStatusProvider
@@ -121,5 +121,10 @@ class EventAdapter(
             Picasso.get().load(event.mainImage).into(image)
             Picasso.get().load("https://picsum.photos/seed/$number/150/150").into(eventLetter)
         }
+    }
+
+    fun refreshData(favorites: List<Event>){
+        data = favorites
+        notifyDataSetChanged()
     }
 }
