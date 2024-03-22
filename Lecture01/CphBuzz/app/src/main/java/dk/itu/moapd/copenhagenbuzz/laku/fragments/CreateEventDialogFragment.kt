@@ -19,11 +19,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class CreateEventDialogFragment(private val isEdit: Boolean = false, private val position: Int = -1) : DialogFragment() {
+/**
+ * Handles dialog fragments for both "Create Event" and "Edit Event" requests.
+ */
+class CreateEventDialogFragment(
+    private val isEdit: Boolean = false,
+    private val position: Int = -1
+) : DialogFragment() {
+
     private var _binding: DialogCreateEventBinding? = null
     private lateinit var model: DataViewModel
     private var startDateFromSelection: Long? = null
-    private var endDateFromSelection: Long? = null
+    private var endDateFromSelection:   Long? = null
     private val binding
         get() = requireNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
@@ -34,8 +41,8 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
         _binding = DialogCreateEventBinding.inflate(layoutInflater)
         model = ViewModelProvider(requireActivity())[DataViewModel::class.java]
 
-        eventTypeSetup()
-        setListeners()
+        setupEventTypeDropdown()
+        setDatePickerListener()
 
         // Return appropriate dialog variant
         return if(isEdit) buildEditEventDialog()
@@ -206,13 +213,9 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
      * Sets up the user interface components by attaching relevant listeners to the
      * necessary components. These listeners have dedicated handler functions.
      */
-    private fun setListeners() {
-        with(binding) {
-            editTextEventDate.setOnFocusChangeListener { _, hasFocus ->
-                if (hasFocus){
-                    handleDatePickerAction()
-                }
-            }
+    private fun setDatePickerListener() {
+        binding.editTextEventDate.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) { handleDatePickerAction() }
         }
     }
 
@@ -225,7 +228,7 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
      * - Instantiates a correct adapter.
      * - Updates the component with the new adapter.
      */
-    private fun eventTypeSetup(){
+    private fun setupEventTypeDropdown(){
         val eventTypes = resources.getStringArray(R.array.event_types)
         val arrayAdapter = ArrayAdapter(
             requireContext(),
@@ -239,7 +242,6 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
                 hideKeyboard()
             }
         }
-
     }
 
     /**
@@ -255,6 +257,10 @@ class CreateEventDialogFragment(private val isEdit: Boolean = false, private val
             editTextEventImage.text.toString().isNotEmpty()
         }
 
+    /**
+     * Helper function that retrieves index of the given event type.
+     * - Written to handle addition of new types automatically.
+     */
     private fun getTypeIndex(type: String): Int{
         val eventTypeArray = resources.getStringArray(R.array.event_types)
         val eventTypeMap = mutableMapOf<String, Int>()

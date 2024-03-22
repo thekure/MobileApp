@@ -52,10 +52,8 @@ class FavoriteAdapter(
         position: Int
     ) {
         Log.d(TAG, "Populate an item at position: $position")
-        // Bind the view holder with the selected `DummyModel` data.
         data[position].let(holder::bind)
     }
 
     override fun getItemCount() = data.size
-
 }
