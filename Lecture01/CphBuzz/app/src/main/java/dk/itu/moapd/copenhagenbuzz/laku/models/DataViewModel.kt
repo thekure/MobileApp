@@ -101,22 +101,22 @@ class DataViewModel(
      * Listens for changes to the dataset
      */
     private fun startListeningForEvents() {
-        _repo.listenForEvents { newEvents ->
+        _repo.listenForEvents { changedEvents ->
             val events = _events.value?.toMutableList() ?: mutableListOf()
 
-            newEvents.events.forEach { newEvent ->
-                when(newEvents.operation){
+            changedEvents.events.forEach { event ->
+                when(changedEvents.operation){
                     CREATE -> {
-                        events.add(newEvent)
+                        events.add(event)
                     }
 
                     UPDATE -> {
-                        val index = events.indexOfFirst { it.eventID == newEvent.eventID }
-                        events[index] = newEvent
+                        val index = events.indexOfFirst { it.eventID == event.eventID }
+                        events[index] = event
                     }
 
                     DELETE -> {
-                        val index = events.indexOfFirst { it.eventID == newEvent.eventID }
+                        val index = events.indexOfFirst { it.eventID == event.eventID }
                         events.removeAt(index)
                     }
                 }
@@ -129,29 +129,35 @@ class DataViewModel(
      * Listens for changes to the dataset
      */
     private fun startListeningForFavorites() {
-        _repo.listenForFavorites { newFavorites ->
+        _repo.listenForFavorites { changedFavorites ->
             val favorites = _favorites.value?.toMutableList() ?: mutableListOf()
 
-            newFavorites.events.forEach { newEvent ->
-                when(newFavorites.operation){
+            changedFavorites.events.forEach { event ->
+                when(changedFavorites.operation){
                     ADD -> {
                         viewModelScope.launch{
                             try{
-                                val event = _repo.readEvent(newEvent)
-                                if(event != null) favorites.add(event)
+                                val newFavorite = _repo.readEvent(event)
+                                if(newFavorite != null) favorites.add(newFavorite)
                             } catch (e: Exception){
-                                Log.d("DATABASE", "Couldn't retrieve favorite with that eventID. Error message: $e\"")
+                                Log.d("DATABASE", "Encountered error when trying to ADD new favorite. Error message: $e\"")
                             }
                         }
                     }
 
                     REMOVE -> {
-                        /*val index = favorites.indexOfFirst { it.eventID == newEvent.eventID }
-                        favorites.removeAt(index)*/
+                        viewModelScope.launch{
+                            try{
+                                val deletedFavorite = _repo.readEvent(event)
+                                if(deletedFavorite != null) favorites.remove(deletedFavorite)
+                            } catch (e: Exception){
+                                Log.d("DATABASE", "Encountered error when trying to remove a favorite. Error message: $e\"")
+                            }
+                        }
                     }
                 }
             }
-            Log.d("DATABASE", "End of listener")
+
             _favorites.postValue(favorites)
         }
     }
