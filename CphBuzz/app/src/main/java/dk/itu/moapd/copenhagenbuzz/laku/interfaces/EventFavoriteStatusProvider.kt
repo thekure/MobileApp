@@ -17,6 +17,12 @@ class EventFavoriteStatusProvider(
         return _model.isEventFavorited(event)
     }
 
+    override fun isEventFavorited(position: Int): Boolean {
+        val event = _model.events.value?.get(position)
+        return if (event != null) isEventFavorited(event)
+        else false
+    }
+
     /**
      * Returns an appropriate listener for TimelineFragment's favorite button to use.
      */

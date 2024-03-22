@@ -14,7 +14,7 @@ import dk.itu.moapd.copenhagenbuzz.laku.interfaces.FavoritedStatusProvider
 @SuppressLint("NotifyDataSetChanged")
 
 class FavoriteAdapter(
-    private val data: List<Event>,
+    private var data: List<Event>,
     private val favoritedStatusProvider: FavoritedStatusProvider,
     private val user: FirebaseUser?
 ): RecyclerView.Adapter<FavoriteAdapter.ViewHolder>() {
@@ -56,4 +56,9 @@ class FavoriteAdapter(
     }
 
     override fun getItemCount() = data.size
+
+    fun refreshData(favorites: List<Event>){
+        data = favorites
+        notifyDataSetChanged()
+    }
 }

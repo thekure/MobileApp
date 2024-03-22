@@ -47,4 +47,5 @@
     <string name="default_image_url">https://picsum.photos/seed/200/400/194</string>
     <string name="edit_event">Edit Event</string>
     <string name="save">Save</string>
+    <string name="event_unfavorite_button">Button that removes from favorites.</string>
 </resources>
