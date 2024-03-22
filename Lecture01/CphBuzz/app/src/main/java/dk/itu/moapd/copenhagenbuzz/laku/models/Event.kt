@@ -25,51 +25,19 @@
 
 package dk.itu.moapd.copenhagenbuzz.laku.models
 
-import com.google.firebase.auth.FirebaseUser
-
-/**
- * This class denotes the different event types.
- * Matches the array of strings in strings.xml
- */
-enum class EventType {
-    BIRTHDAY,
-    WEDDING,
-    CONFERENCE
-}
-
 /**
  * Contains the relevant fields of an event object.
  */
 data class Event(
-    var title: String,
-    var location: String,
-    var date: String,
-    var type: EventType,
-    var description: String,
-    var isFavorited: Boolean,
-    var mainImage: String,
-    var createdBy: FirebaseUser?
-) {
-
-    /**
-     * Custom toString function.
-     */
-    override fun toString(): String {
-        return "Event (eventName = ’$title’, " +
-                "location = ’$location’) " +
-                "date = ’$date’) " +
-                "type = ’$type’) " +
-                "description = ’$description’)"
-    }
-
-    /**
-     * Returns the index of the event type
-     */
-    fun getTypeIndex(): Int{
-        return when (type){
-            EventType.BIRTHDAY -> 0
-            EventType.WEDDING -> 1
-            EventType.CONFERENCE -> 2
-        }
-    }
-}
+    var eventID: String? = null,
+    var userID: String? = null,
+    var title: String? = null,
+    var location: String? = null,
+    var startDate: Long? = null,
+    var endDate: Long? = null,
+    var dateString: String? = null,
+    var typeString: String? = null,
+    var type: Int? = null,
+    var description: String? = null,
+    var mainImage: String? = null
+)

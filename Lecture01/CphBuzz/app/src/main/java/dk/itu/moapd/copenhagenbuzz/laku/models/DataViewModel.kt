@@ -20,17 +20,21 @@
  */
 package dk.itu.moapd.copenhagenbuzz.laku.models
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.javafaker.Faker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import dk.itu.moapd.copenhagenbuzz.laku.models.EventOperation.Operation.*
+import dk.itu.moapd.copenhagenbuzz.laku.models.EventOperation.Operation.CREATE
+import dk.itu.moapd.copenhagenbuzz.laku.models.FavoriteOperation.Operation
+import dk.itu.moapd.copenhagenbuzz.laku.models.FavoriteOperation.Operation.*
+import dk.itu.moapd.copenhagenbuzz.laku.repositories.EventRepository
 import kotlinx.coroutines.launch
-import java.lang.Exception
-import kotlin.random.Random
+import kotlin.Exception
 
 
 class DataViewModel(
@@ -56,6 +60,11 @@ class DataViewModel(
         savedStateHandle.getLiveData(FAVORITE_EVENTS, ArrayList())
     }
 
+    /**
+     * Responsible for database operations
+     */
+    private val _repo = EventRepository()
+
 
     /**
      * A LiveData object to hold a list of events.
@@ -64,92 +73,202 @@ class DataViewModel(
     val favorites: LiveData<List<Event>> = _favorites
 
     init{
-        fetchEvents()
-    }
-
-    private fun fetchEvents() {
-        viewModelScope.launch {
-            try {
-                _events.value = generateDummyEvents()
-                _favorites.value = getFavorites()
-            } catch (e: Exception){
-                println("Couldn't fetch events: $e")
-            }
-        }
-
-    }
-
-    private fun generateDummyEvents(): List<Event> {
-        // Generate dummy events here
-        val faker = Faker()
-        val eventList = mutableListOf<Event>()
-        repeat(2) {
-            val number = Random.nextInt(1, 501)
-            val event = Event(
-                title = faker.lorem().word(),
-                location = faker.address().city(),
-                date = faker.date().toString(),
-                type = EventType.WEDDING,
-                description = faker.lorem().word(),
-                isFavorited = false,
-                mainImage = "https://picsum.photos/seed/$number/400/194",
-                null
-            )
-            eventList.add(event)
-        }
-        repeat(2) {
-            val number = Random.nextInt(1, 501)
-            val event = Event(
-                title = faker.lorem().word(),
-                location = faker.address().city(),
-                date = faker.date().toString(),
-                type = EventType.BIRTHDAY,
-                description = faker.lorem().word(),
-                isFavorited = true,
-                mainImage = "https://picsum.photos/seed/$number/400/194",
-                null
-            )
-            eventList.add(event)
-        }
-        return eventList
+        initCollections()
+        startListeningForEvents()
+        startListeningForFavorites()
     }
 
     /**
-     * Return a list of favorited events.
+     * Populates the collections from the database on startup.
      */
-    private fun getFavorites(): List<Event> {
-        return _events.value?.filter { it.isFavorited } ?: emptyList()
+    private fun initCollections(){
+        viewModelScope.launch {
+            try {
+                _repo.readAllEvents { events ->
+                    _events.postValue(events)
+                }
+
+                _repo.readAllFavorites { favorites ->
+                    _favorites.postValue(favorites)
+                }
+            } catch (e: Exception) {
+                println("Couldn't initialize collections. Error message: $e\"")
+            }
+        }
     }
 
-    fun invertIsFavorited(event: Event) {
-        event.isFavorited = !event.isFavorited
-        _favorites.value = getFavorites()
+    /**
+     * Listens for changes to the dataset
+     */
+    private fun startListeningForEvents() {
+        _repo.listenForEvents { changedEvents ->
+            val events = _events.value?.toMutableList() ?: mutableListOf()
+
+            changedEvents.events.forEach { event ->
+                when(changedEvents.operation){
+                    CREATE -> {
+                        events.add(event)
+                    }
+
+                    UPDATE -> {
+                        val index = events.indexOfFirst { it.eventID == event.eventID }
+                        events[index] = event
+                    }
+
+                    DELETE -> {
+                        val index = events.indexOfFirst { it.eventID == event.eventID }
+                        events.removeAt(index)
+                    }
+                }
+            }
+            _events.postValue(events)
+        }
     }
 
+    /**
+     * Listens for changes to the dataset
+     */
+    private fun startListeningForFavorites() {
+        _repo.listenForFavorites { changedFavorites ->
+            val favorites = _favorites.value?.toMutableList() ?: mutableListOf()
+
+            changedFavorites.events.forEach { event ->
+                when(changedFavorites.operation){
+                    ADD -> {
+                        viewModelScope.launch{
+                            try{
+                                val newFavorite = _repo.readEvent(event)
+                                if(newFavorite != null) favorites.add(newFavorite)
+                            } catch (e: Exception){
+                                Log.d("DATABASE", "Encountered error when trying to ADD new favorite. Error message: $e\"")
+                            }
+                        }
+                    }
+
+                    REMOVE -> {
+                        viewModelScope.launch{
+                            try{
+                                val deletedFavorite = _repo.readEvent(event)
+                                if(deletedFavorite != null) favorites.remove(deletedFavorite)
+                            } catch (e: Exception){
+                                Log.d("DATABASE", "Encountered error when trying to remove a favorite. Error message: $e\"")
+                            }
+                        }
+                    }
+                }
+            }
+
+            _favorites.postValue(favorites)
+        }
+    }
+
+    /**
+     * Propagates create event requests from users to the repository
+     */
     fun createEvent(event: Event) {
-        val events = _events.value?.toMutableList() ?: mutableListOf()
-        events.add(event)
-        _events.postValue(events)
+        viewModelScope.launch {
+            try{
+                _repo.createEvent(event)
+            } catch (e: Exception){
+                Log.d("DATABASE", "Couldn't create event")
+            }
+        }
     }
 
-    fun updateEvent(position: Int, updatedEvent: Event){
-        val events = _events.value?.toMutableList() ?: mutableListOf()
-        events[position] = updatedEvent
-        _events.postValue(events)
-
+    /**
+     * Propagates edit event requests from users to the repository
+     */
+    fun updateEvent(event: Event){
+        viewModelScope.launch {
+            try {
+                _repo.updateEvent(event)
+            } catch (e: Exception) {
+                Log.d("DATABASE", "Couldn't update event. Error message: $e\"")
+            }
+        }
     }
 
-    fun getEvent(position: Int): Event {
-        val events = _events.value?.toMutableList() ?: mutableListOf()
-        return events[position]
+    /**
+     * Propagates delete event requests from users to the repository
+     */
+    fun deleteEvent(event: Event){
+        viewModelScope.launch {
+            try {
+                _repo.deleteEvent(event)
+            } catch (e: Exception) {
+                Log.d("DATABASE", "Couldn't delete event. Error message: $e\"")
+            }
+        }
     }
 
-    fun getUser():FirebaseUser?{
+    /**
+     * Propagates favorite event requests from users to the repository
+     */
+    fun addToFavorites(event: Event){
+        viewModelScope.launch {
+            try {
+                _repo.createFavorite(event)
+            } catch (e: Exception) {
+                Log.d("DATABASE", "Couldn't create favorite event. Error message: $e")
+            }
+        }
+    }
+
+    /**
+     * Propagates unfavorite event requests from users to the repository
+     */
+    fun removeFromFavorites(event: Event){
+        viewModelScope.launch {
+            try {
+                _repo.removeFavorite(event)
+            } catch (e: Exception) {
+                Log.d("DATABASE", "Couldn't delete favorite event. Error message: $e")
+            }
+        }
+    }
+
+
+    /**
+     * Helper function used to populate UI fields with data from existing events
+     */
+    fun getEventAtIndex(index: Int): Event {
+        val events = _events.value?.toMutableList() ?: mutableListOf()
+        return events[index]
+    }
+
+    /**
+     * Helper function to determine whether or not an event has been favorited by the user.
+     * The exposed favorites collection should only contain events stored in the
+     * favorites/$uid/ path of the database, and so a .contains call to that collection
+     * is used here.
+     */
+    fun isEventFavorited(event: Event): Boolean{
+        val favorites = _favorites.value?.toMutableList() ?: mutableListOf()
+        return favorites.contains(event)
+    }
+
+    /**
+     * Helper method to return current user via auth.
+     * - Avoids having all Fragments being dependent on auth as well.
+     */
+    fun getUser():FirebaseUser? {
         return FirebaseAuth.getInstance().currentUser
     }
 
+    /**
+     * Helper method ensuring clean code when checking login validity.
+     */
     fun loggedIn(): Boolean{
         val user = FirebaseAuth.getInstance().currentUser
         return !(user == null || user.isAnonymous)
     }
+
+    /**
+     * Cleans up database listeners when finished.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        _repo.removeEventListeners()
+    }
+
 }

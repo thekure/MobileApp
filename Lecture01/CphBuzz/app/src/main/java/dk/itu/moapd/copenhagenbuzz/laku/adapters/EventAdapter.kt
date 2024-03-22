@@ -7,10 +7,12 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import com.firebase.ui.database.FirebaseListAdapter
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseUser
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
+import dk.itu.moapd.copenhagenbuzz.laku.interfaces.FavoritedStatusProvider
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import kotlin.random.Random
 
@@ -18,14 +20,14 @@ class EventAdapter(
     private val context: Context,
     private var resource: Int,
     private val data: List<Event>,
-    private val favoritedListener: (Int) -> Unit,
     private val onEditEventClicked: (Int) -> Unit,
-    private val user: FirebaseUser?
+    private val user: FirebaseUser?,
+    private val favoritedStatusProvider: FavoritedStatusProvider
 ): ArrayAdapter<Event>(
     context,
     R.layout.event_row_item,
     data
-) {
+){
 
     private class ViewHolder(view: View){
         val eventLetter: ImageView = view.findViewById(R.id.item_event_letter)
@@ -60,14 +62,12 @@ class EventAdapter(
      * - Sets listeners
      */
     private fun populateViewHolder(viewHolder: ViewHolder, event: Event, position: Int) {
-        with(viewHolder) {
-            // Fill out the Material Design card.
-            loadImages(viewHolder, event)       // Load images using Picasso
-            setText(viewHolder, event)          // Set text from Event
-            handleFavorites(viewHolder, event)  // Set icon for fave button
-            handleEditButton(viewHolder, event) // Set visibility based on login status
-            setListeners(viewHolder, position)  // Setup listeners for each button
-        }
+        // Fill out the Material Design card.
+        loadImages(viewHolder, event)       // Load images using Picasso
+        setText(viewHolder, event)          // Set text from Event
+        handleFavorites(viewHolder, event)  // Set icon for fave button
+        handleEditButton(viewHolder, event) // Set visibility based on login status
+        setListeners(viewHolder, position)  // Setup listeners for each button
     }
 
     private fun setListeners(viewHolder: ViewHolder, position: Int) {
@@ -77,18 +77,18 @@ class EventAdapter(
             }
 
             infoBtn.setOnClickListener {
-
+                TODO()
             }
 
             favoriteBtn.setOnClickListener {
-                favoritedListener.invoke(position)
+                favoritedStatusProvider.getFavoriteAddedListener().invoke(position)
                 notifyDataSetChanged()
             }
         }
     }
 
     private fun handleEditButton(viewHolder: ViewHolder, event: Event) {
-        if(event.createdBy == user){
+        if(event.userID == user?.uid){
             viewHolder.editBtn.visibility = View.VISIBLE
         } else {
             viewHolder.editBtn.visibility = View.GONE
@@ -97,7 +97,7 @@ class EventAdapter(
 
     private fun handleFavorites(viewHolder: ViewHolder, event: Event) {
         viewHolder.favoriteBtn.setIconResource(
-            if (event.isFavorited) R.drawable.baseline_favorite_24
+            if (favoritedStatusProvider.isEventFavorited(event)) R.drawable.baseline_favorite_24
             else R.drawable.outline_favorite_border_24
         )
 
@@ -107,10 +107,10 @@ class EventAdapter(
     private fun setText(viewHolder: ViewHolder, event: Event) {
         with(viewHolder){
             title.text = event.title
-            type.text = event.type.toString()
+            type.text = event.typeString
             description.text = event.description
             location.text = event.location
-            date.text = event.date
+            date.text = event.dateString
         }
     }
 

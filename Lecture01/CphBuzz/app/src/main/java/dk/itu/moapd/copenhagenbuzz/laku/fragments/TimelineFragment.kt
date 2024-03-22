@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.adapters.EventAdapter
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.FragmentTimelineBinding
+import dk.itu.moapd.copenhagenbuzz.laku.interfaces.EventFavoriteStatusProvider
 import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 
 class TimelineFragment : Fragment() {
@@ -37,17 +38,15 @@ class TimelineFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         _model = ViewModelProvider(requireActivity())[DataViewModel::class.java]
+        val favoritedStatusProvider = EventFavoriteStatusProvider(_model)
         _model.events.observe(viewLifecycleOwner){ events ->
             val adapter = EventAdapter(
-                requireContext(),
-                R.layout.event_row_item,
-                events,
-                favoritedListener = { position ->
-                    val event = _model.events.value?.get(position)
-                    _model.invertIsFavorited(event!!)
-                },
-                this::showEditEventDialog,
-                _model.getUser()
+                context = requireContext(),
+                resource = R.layout.event_row_item,
+                data = events,
+                onEditEventClicked = this::showEditEventDialog,
+                user = _model.getUser(),
+                favoritedStatusProvider = favoritedStatusProvider
             )
 
             binding.listViewTimeline.adapter = adapter

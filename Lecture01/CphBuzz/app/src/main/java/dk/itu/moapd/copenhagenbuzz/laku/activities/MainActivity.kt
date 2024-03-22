@@ -177,7 +177,6 @@ class MainActivity : AppCompatActivity() {
     /**
      * Action listeners for each top menu option.
      */
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         // Handle top app bar menu item clicks.
         R.id.action_user_info -> {
