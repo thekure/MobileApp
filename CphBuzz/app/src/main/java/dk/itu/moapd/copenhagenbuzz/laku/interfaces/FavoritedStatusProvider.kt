@@ -7,4 +7,5 @@ interface FavoritedStatusProvider {
     fun isEventFavorited(event: Event): Boolean
     fun getFavoriteAddedListener(): (Int) -> Unit
     fun getFavoriteRemovedListener(): (Int) -> Unit
+    fun isEventFavorited(position: Int): Boolean
 }

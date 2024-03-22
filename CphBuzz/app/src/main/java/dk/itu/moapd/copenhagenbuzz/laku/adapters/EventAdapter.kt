@@ -1,13 +1,14 @@
 package dk.itu.moapd.copenhagenbuzz.laku.adapters
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import com.firebase.ui.database.FirebaseListAdapter
+import android.widget.Toast
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseUser
 import com.squareup.picasso.Picasso
@@ -28,6 +29,9 @@ class EventAdapter(
     R.layout.event_row_item,
     data
 ){
+    private var lastAddToFavoritesTime: Long = 0
+    private val cooldown = 300
+    private var toastShown = false
 
     private class ViewHolder(view: View){
         val eventLetter: ImageView = view.findViewById(R.id.item_event_letter)
@@ -38,6 +42,7 @@ class EventAdapter(
         val date: TextView = view.findViewById(R.id.item_event_date)
         val description: TextView = view.findViewById(R.id.item_event_description)
         val favoriteBtn: MaterialButton = view.findViewById(R.id.event_btn_favorite)
+        val unfavoriteBtn: MaterialButton = view.findViewById(R.id.event_btn_unfavorite)
         val editBtn: MaterialButton = view.findViewById(R.id.button_edit)
         val infoBtn: MaterialButton = view.findViewById(R.id.button_info)
     }
@@ -81,8 +86,41 @@ class EventAdapter(
             }
 
             favoriteBtn.setOnClickListener {
-                favoritedStatusProvider.getFavoriteAddedListener().invoke(position)
-                notifyDataSetChanged()
+                with(favoritedStatusProvider){
+                    val time = System.currentTimeMillis()
+                    if (time - lastAddToFavoritesTime >= cooldown) {
+                        Log.d("DATABASE", "Add")
+                        getFavoriteAddedListener().invoke(position)
+                        favoriteBtn.visibility = View.GONE
+                        unfavoriteBtn.visibility = View.VISIBLE
+
+                        lastAddToFavoritesTime = time
+                        // Reset the toastShown flag
+                        toastShown = false
+                    } else if (!toastShown){
+                        Toast.makeText(context, "Dude, hold on a second..", Toast.LENGTH_SHORT).show()
+                        toastShown = true
+                    }
+                }
+            }
+
+            unfavoriteBtn.setOnClickListener {
+                with(favoritedStatusProvider){
+                    val time = System.currentTimeMillis()
+                    if (time - lastAddToFavoritesTime >= cooldown) {
+                        Log.d("DATABASE", "Remove")
+                        getFavoriteRemovedListener().invoke(position)
+                        unfavoriteBtn.visibility = View.GONE
+                        favoriteBtn.visibility = View.VISIBLE
+
+                        lastAddToFavoritesTime = time
+                        // Reset the toastShown flag
+                        toastShown = false
+                    } else if (!toastShown){
+                        Toast.makeText(context, "Dude, hold on a second..", Toast.LENGTH_SHORT).show()
+                        toastShown = true
+                    }
+                }
             }
         }
     }
@@ -96,12 +134,23 @@ class EventAdapter(
     }
 
     private fun handleFavorites(viewHolder: ViewHolder, event: Event) {
-        viewHolder.favoriteBtn.setIconResource(
-            if (favoritedStatusProvider.isEventFavorited(event)) R.drawable.baseline_favorite_24
-            else R.drawable.outline_favorite_border_24
-        )
+        val isFavorite = favoritedStatusProvider.isEventFavorited(event)
+        val userIsInvalid = (user == null || user.isAnonymous)
 
-        if(user == null || user.isAnonymous) viewHolder.favoriteBtn.visibility = View.GONE
+        with(viewHolder){
+            if(isFavorite) {
+                favoriteBtn.visibility = View.GONE
+                unfavoriteBtn.visibility = View.VISIBLE
+            } else {
+                favoriteBtn.visibility = View.VISIBLE
+                unfavoriteBtn.visibility = View.GONE
+            }
+
+            if (userIsInvalid) {
+                favoriteBtn.visibility = View.GONE
+                unfavoriteBtn.visibility = View.GONE
+            }
+        }
     }
 
     private fun setText(viewHolder: ViewHolder, event: Event) {
@@ -123,8 +172,8 @@ class EventAdapter(
         }
     }
 
-    fun refreshData(favorites: List<Event>){
-        data = favorites
+    fun refreshData(events: List<Event>){
+        data = events
         notifyDataSetChanged()
     }
 }
