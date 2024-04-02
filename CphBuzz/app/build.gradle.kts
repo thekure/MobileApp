@@ -40,6 +40,17 @@ android {
     }
 }
 
+secrets {
+    propertiesFileName = "secrets.properties"
+    defaultPropertiesFileName = "local.defaults.properties"
+
+    // Configure which keys should be ignored by the plugin by providing regular expressions.
+    // "sdk.dir" is ignored by default.
+    ignoreList.add("keyToIgnore") // Ignore the key "keyToIgnore"
+    ignoreList.add("sdk.*")       // Ignore all keys matching the regexp "sdk.*"
+}
+
+
 dependencies {
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:32.7.4"))

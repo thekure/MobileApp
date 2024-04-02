@@ -18,4 +18,3 @@ gen-external-apklibs
 .cxx
 local.properties
 secrets.properties
-local.defaults.properties
