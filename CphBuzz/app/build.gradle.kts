@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -48,6 +49,7 @@ dependencies {
     implementation("com.firebaseui:firebase-ui-auth:8.0.0")
     // Updating this past 20.5.0 messes with Firebase as of 15/03/2024
     implementation("com.google.android.gms:play-services-auth:20.5.0")
+    implementation("com.google.android.gms:play-services-location:21.1.0")
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-database-ktx")
     // FirebaseUI for Firebase Realtime Database

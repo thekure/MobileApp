@@ -17,3 +17,4 @@ gen-external-apklibs
 .externalNativeBuild
 .cxx
 local.properties
+secrets.properties
