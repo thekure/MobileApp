@@ -154,7 +154,7 @@
                 app:startIconContentDescription="Event image url"
                 app:endIconMode="clear_text"
                 app:layout_constraintTop_toBottomOf="@id/text_field_event_description"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/text_field_event_latitude"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 
@@ -164,6 +164,52 @@
                     android:layout_height="wrap_content"
                     android:inputType="text"
                     android:text="@string/default_image_url"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/text_field_event_latitude"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin_small_8"
+                android:layout_marginEnd="@dimen/margin_small_8"
+                android:layout_marginTop="@dimen/margin_medium_16"
+                android:hint="@string/latitude"
+                app:startIconContentDescription="Event latitude"
+                app:endIconMode="clear_text"
+                app:layout_constraintTop_toBottomOf="@id/text_field_event_image"
+                app:layout_constraintBottom_toTopOf="@id/text_field_event_longitude"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_text_event_latitude"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/text_field_event_longitude"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin_small_8"
+                android:layout_marginEnd="@dimen/margin_small_8"
+                android:layout_marginTop="@dimen/margin_medium_16"
+                android:hint="@string/longitude"
+                app:startIconContentDescription="Event longitude"
+                app:endIconMode="clear_text"
+                app:layout_constraintTop_toBottomOf="@id/text_field_event_latitude"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_text_event_longitude"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"/>
 
             </com.google.android.material.textfield.TextInputLayout>
 

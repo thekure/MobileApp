@@ -3,6 +3,8 @@ package dk.itu.moapd.copenhagenbuzz.laku.fragments
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
+import android.location.Geocoder
+import android.os.AsyncTask
 import android.os.Bundle
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -35,6 +37,8 @@ class CreateEventDialogFragment(
         get() = requireNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
         }
+    private var latitude = 0.0
+    private var longitude = 0.0
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         super.onCreateDialog(savedInstanceState)
@@ -65,6 +69,7 @@ class CreateEventDialogFragment(
             editTextEventDate.setText("Wed, May 15 2024")
             editTextEventDescription.setText("Test Description")
             editTextEventImage.setText("https://picsum.photos/seed/290/400/194")
+
         }
         // Remove above binding block
 
@@ -94,16 +99,21 @@ class CreateEventDialogFragment(
         with(binding) {
             // Only execute the following code when the user fills all fields
             if (checkInputValidity()) {
+                val location = editTextEventLocation.text.toString().trim()
+                fetchCoordinatesAndCreateEvent(location)
                 val event = Event(
                     userID = model.getUser()!!.uid,
                     title = editTextEventName.text.toString().trim(),
-                    location = editTextEventLocation.text.toString().trim(),
+                    location = location,
                     startDate = startDateFromSelection,
                     endDate = endDateFromSelection,
                     dateString = getDateString(startDateFromSelection, endDateFromSelection),
                     typeString = autoCompleteEventTypes.text.toString(),
                     description = editTextEventDescription.text.toString().trim(),
                     mainImage = editTextEventImage.text.toString().trim(),
+
+                    latitude = latitude,
+                    longitude = longitude
                 )
 
                 event.type = getTypeIndex(event.typeString!!)
@@ -306,4 +316,28 @@ class CreateEventDialogFragment(
             imm.hideSoftInputFromWindow(currentFocusedView.windowToken, 0)
         }
     }
+
+    private fun fetchCoordinatesAndCreateEvent(location: String) {
+        val geocoder = Geocoder(requireContext(), Locale.getDefault())
+        AsyncTask.execute {
+            try {
+                val addressList = geocoder.getFromLocationName(location, 1)
+                if (addressList != null && addressList.isNotEmpty()) {
+                    val address = addressList[0]
+                    latitude = address.latitude
+                    longitude = address.longitude
+
+                } else {
+                    activity?.runOnUiThread {
+                        showToast("Could not find coordinates for the provided location.")
+                    }
+                }
+            } catch (e: Exception) {
+                activity?.runOnUiThread {
+                    showToast("Geocoding failed: ${e.message}")
+                }
+            }
+        }
+    }
+
 }
