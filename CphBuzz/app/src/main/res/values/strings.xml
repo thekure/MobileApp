@@ -48,4 +48,7 @@
     <string name="edit_event">Edit Event</string>
     <string name="save">Save</string>
     <string name="event_unfavorite_button">Button that removes from favorites.</string>
+    <string name="latitude">latitude</string>
+    <string name="longitude">longitude</string>
+    <string name="altitude">altitude</string>
 </resources>
