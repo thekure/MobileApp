@@ -302,4 +302,22 @@ class EventRepository {
         eventsRef.removeEventListener(eventsListener)
         favoritesRef.removeEventListener(favoritesListener)
     }
+
+    fun isFavorite(event: Event, callback: (Boolean) -> Unit){
+        val user = auth.currentUser
+
+        user?.uid?.let { uid ->
+            favoritesRef
+                .child(uid)
+                .get()
+                .addOnSuccessListener { result ->
+                    val isFavorite = result.children.any {it.key == event.userID }
+                    callback(isFavorite)
+                }
+                .addOnCanceledListener {
+                    Log.d("DATABASE", "Error while checking favorited status.")
+                }
+        }
+    }
+
 }

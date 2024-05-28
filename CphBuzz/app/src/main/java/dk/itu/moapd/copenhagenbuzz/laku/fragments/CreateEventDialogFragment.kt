@@ -1,35 +1,32 @@
 package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
+import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
-import android.location.Geocoder
+import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
-import androidx.core.net.toUri
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.firebase.Firebase
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.storage
-import com.google.firebase.storage.storageMetadata
+import com.google.mlkit.vision.label.ImageLabeler
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.DialogCreateEventBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
-import dk.itu.moapd.copenhagenbuzz.laku.services.LocationService
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -48,7 +45,6 @@ class CreateEventDialogFragment(
     private var startDateFromSelection: Long? = null
     private var endDateFromSelection:   Long? = null
     private lateinit var storage: FirebaseStorage
-    private var uri = "".toUri()
     private val binding
         get() = requireNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
@@ -59,9 +55,13 @@ class CreateEventDialogFragment(
         _binding = DialogCreateEventBinding.inflate(layoutInflater)
         model = ViewModelProvider(requireActivity())[DataViewModel::class.java]
 
+        if (!checkPermission()){
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+
         setupEventTypeDropdown()
         setDatePickerListener()
-        addImageListener()
+        setupImageButtons()
 
         // Return appropriate dialog variant
         return if(isEdit) buildEditEventDialog()
@@ -94,7 +94,7 @@ class CreateEventDialogFragment(
             .setTitle(R.string.create_event)
             .setView(binding.root)
             .setPositiveButton(R.string.create, null)
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setNeutralButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
             }
             .create().apply {
@@ -105,6 +105,7 @@ class CreateEventDialogFragment(
                 }
             }
     }
+
 
 
     /**
@@ -341,120 +342,88 @@ class CreateEventDialogFragment(
         }
     }
 
-    private fun addImageListener() {
-        with(binding) {
-            uploadBtn.setOnClickListener {
-                Log.d("TAG", "select img clicked")
-                val fragmentManager = (context as AppCompatActivity).supportFragmentManager
-                val transaction = fragmentManager.beginTransaction()
-                val imageSelect = ImageSelectFragment()
 
-                // Set up a listener to receive the imageUri when the photo is taken
-                imageSelect.setOnPhotoChosenListener(object : ImageSelectFragment.OnPhotoChosenListener {
-                    override fun onPhotoTaken(imageUri: Uri) {
-                        Log.d("TAG", "Image URI: $imageUri")
 
-                        // Navigate back to the previous fragment
-                        fragmentManager.popBackStack()
-                        Log.d("CAM", "Uploading image file")
-                        uploadImage(imageUri)
-                    }
-                })
+    private var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+    private var imageCapture: ImageCapture? = null
+    private var imageUri: Uri? = null
+    private lateinit var labeler : ImageLabeler
 
-                // Replace the current fragment with CameraFragment
-                transaction.replace(android.R.id.content, imageSelect)
-                transaction.addToBackStack(null)
 
-                // Remove other fragments from the back stack
-                val backStackCount = fragmentManager.backStackEntryCount
-                if (backStackCount > 0) {
-                    val backStackId = fragmentManager.getBackStackEntryAt(backStackCount - 1).id
-                    fragmentManager.popBackStack(backStackId, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                }
-                transaction.commit()
-            }
-
-            takePicBtn.setOnClickListener {
-                Log.d("CAM", "Creating image file")
-                val photoFile: File = createImageFile()
-                Log.d("CAM", "Getting uri")
-                uri = FileProvider.getUriForFile(
-                    requireContext(),
-                    "dk.itu.moapd.copenhagenbuzz.laku.fileprovider",
-                    photoFile
-                )
-                Log.d("CAM", "Launching photolauncher")
-                // takePhotoLauncher.launch(uri)
-            }
-        }
+    companion object {
+        private const val FILENAME_FORMAT = "yyyyMMdd_HHmmss"
     }
-
-    /**
-     * Upload image to bucket and update the event in the database with the new bucket path
-     * @param imageUri the path to the image locally on the phone
-     */
-    private fun uploadImage(imageUri : Uri) {
-        storage = Firebase.storage
-
-        val storageRef = storage.reference
-
-        val file = imageUri
-
-        // Create the file metadata
-        val metadata = storageMetadata {
-            contentType = "image/jpeg"
-        }
-
-        // Upload file and metadata to the path 'images/mountains.jpg'
-        val uploadTask = storageRef.child("images/${file.lastPathSegment}").putFile(file, metadata)
-
-        uploadTask.addOnProgressListener {
-            Log.d("UPLOAD", "Upload is doing stuff")
-        }.addOnPausedListener {
-            Log.d("UPLOAD", "Upload is paused")
-        }.addOnFailureListener {
-            Log.d("UPLOAD", "Upload is not great success")
-            // Handle unsuccessful uploads
-        }.addOnSuccessListener { it ->
-            Log.d("UPLOAD", "Upload is great success")
-            it.storage.downloadUrl.addOnSuccessListener {
-                uri = it
-                Log.d("UPLOAD", "here it is $it")
-            }
-        }
-    }
-
 
     private val takePhoto = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { didTakePhoto: Boolean ->
-        if(didTakePhoto && uri != null) {
-            // updatePhotoThumbnail(photoUri)
+        if(didTakePhoto && imageUri != null) {
+            Log.d("CAM", "takePhoto")
+            // HANDLE SUCCESS HERE
         }
     }
 
-    private fun createImageFile(): File {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-        val storageDir: File = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
-        return File.createTempFile(
-            "JPEG_${timeStamp}_",
-            ".jpg",
-            storageDir
-        )
+    private val pickPhotoFromGallery = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { photoUri ->
+        photoUri?.let {
+            Log.d("CAM", "pickPhotoFromGallery, imageUri: $imageUri")
+            imageUri = it
+        }
     }
 
-    private val takePhotoLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { didTakePhoto ->
-        if (didTakePhoto) {
-            Log.d("CAM", "Did take photo")
-            uri?.let {
-                // You can update your UI or perform other operations with the photo URI here
-                // uploadImage(it)
-                binding.editTextEventImage.setText(it.toString())
+    private fun setupImageButtons() {
+        Log.d("CAM", "setupButtons")
+        binding.takePicBtn.setOnClickListener {
+
+            if (checkPermission()){
+                try{
+                    val photoName = "IMG_${SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()).format(Date())}.JPG"
+                    val photoFile =
+                        File(requireContext().applicationContext.filesDir, photoName)
+                    Log.d("CAM", "Creating image file at ${photoFile.absolutePath}")
+                    imageUri =
+                        FileProvider.getUriForFile(
+                            requireContext(),
+                            "dk.itu.moapd.copenhagenbuzz.laku.fileprovider",
+                            photoFile
+                        )
+
+                    Log.d("CAM", "takePhoto.launch(${imageUri})")
+                    takePhoto.launch(imageUri)
+                }
+                 catch (e: Exception){
+                     Log.d("CAM", "Encountered exception: $e")
+                     e.printStackTrace()
+                }
             }
-        } else {
-            // Handle the case where the photo was not taken
-            showToast("Failed to take photo")
+
+            else{
+                Log.d("CAM", "No permission")
+            }
         }
+
+        binding.uploadBtn.setOnClickListener {
+            Log.d("CAM", "uploadOnClickListener")
+            pickPhotoFromGallery
+                .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        }
+
+        binding.uploadBtn.isEnabled =
+            ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(requireContext())
     }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        // cameraPermissionResult(result)
+    }
+
+
+    private fun checkPermission() =
+        ActivityCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
 
 }

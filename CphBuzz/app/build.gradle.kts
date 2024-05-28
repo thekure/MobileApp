@@ -82,6 +82,7 @@ dependencies {
     implementation("androidx.camera:camera-core:1.3.3")
     implementation("androidx.camera:camera-lifecycle:1.3.3")
     implementation("androidx.camera:camera-view:1.3.3")
+    implementation("com.google.mlkit:image-labeling-common:18.1.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

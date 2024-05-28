@@ -131,6 +131,11 @@ class MapsFragment : Fragment() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(locationBroadcastReceiver)
+    }
+
     override fun onResume() {
         super.onResume()
 

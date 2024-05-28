@@ -9,31 +9,37 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.isVisible
+import com.firebase.ui.database.FirebaseListAdapter
+import com.firebase.ui.database.FirebaseListOptions
 import com.google.android.material.button.MaterialButton
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.storage.FirebaseStorage
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
+import dk.itu.moapd.copenhagenbuzz.laku.interfaces.EventBtnListener
 import dk.itu.moapd.copenhagenbuzz.laku.interfaces.FavoritedStatusProvider
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
+import dk.itu.moapd.copenhagenbuzz.laku.repositories.EventRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
-class EventAdapter(
-    private val context: Context,
-    private var resource: Int,
-    private var data: List<Event>,
-    private val onEditEventClicked: (Int) -> Unit,
-    private val onEventInfoClicked: (Int) -> Unit,
-    private val onDeleteEventClicked: (Int) -> Unit,
-    private val user: FirebaseUser?,
-    private val favoritedStatusProvider: FavoritedStatusProvider
-): ArrayAdapter<Event>(
-    context,
-    R.layout.event_row_item,
-    data
-){
-    private var lastAddToFavoritesTime: Long = 0
-    private val cooldown = 300
-    private var toastShown = false
+class EventAdapter(option: FirebaseListOptions<Event>,
+                   private val context: Context?,
+                   private val repository: EventRepository,
+                   private val coroutineScope: CoroutineScope,
+                   private val user: FirebaseUser?,
+                   private val onClickListener: EventBtnListener
+
+): FirebaseListAdapter<Event>(option){
+    private lateinit var favoriteCallback: (Boolean) -> Unit
+
+    fun setFavoriteCallback(callback: (Boolean) -> Unit) {
+        favoriteCallback = callback
+    }
 
     private class ViewHolder(view: View){
         val eventLetter: ImageView = view.findViewById(R.id.item_event_letter)
@@ -44,24 +50,9 @@ class EventAdapter(
         val date: TextView = view.findViewById(R.id.item_event_date)
         val description: TextView = view.findViewById(R.id.item_event_description)
         val favoriteBtn: MaterialButton = view.findViewById(R.id.event_btn_favorite)
-        val unfavoriteBtn: MaterialButton = view.findViewById(R.id.event_btn_unfavorite)
         val deleteBtn: MaterialButton = view.findViewById(R.id.button_delete)
         val editBtn: MaterialButton = view.findViewById(R.id.button_edit)
         val infoBtn: MaterialButton = view.findViewById(R.id.button_info)
-    }
-
-
-
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val view = convertView ?: LayoutInflater.from(context).inflate(resource, parent, false)
-        val viewHolder = (view.tag as? ViewHolder) ?: ViewHolder(view)
-
-        getItem(position)?.let { event ->
-            populateViewHolder(viewHolder, event, position)
-        }
-
-        view.tag = viewHolder
-        return view
     }
 
     /**
@@ -69,114 +60,13 @@ class EventAdapter(
      * - Sets visibility
      * - Sets listeners
      */
-    private fun populateViewHolder(viewHolder: ViewHolder, event: Event, position: Int) {
-        // Fill out the Material Design card.
-        loadImages(viewHolder, event)           // Load images using Picasso
-        setText(viewHolder, event)              // Set text from Event
-        handleFavorites(viewHolder, event)      // Set icon for fave button
-        handleEditButton(viewHolder, event)     // Set visibility based on login status
-        handleDeleteButton(viewHolder, event)   // Set visibility based on login status
-        setListeners(viewHolder, position)      // Setup listeners for each button
-    }
+    override fun populateView(v: View, event: Event, position: Int) {
+        val viewHolder = ViewHolder(v)
 
-    private fun setListeners(viewHolder: ViewHolder, position: Int) {
-        with(viewHolder){
-            editBtn.setOnClickListener{
-                onEditEventClicked(position)
-            }
-
-            infoBtn.setOnClickListener {
-                onEventInfoClicked(position)
-            }
-
-            deleteBtn.setOnClickListener {
-                onDeleteEventClicked(position)
-            }
-
-            favoriteBtn.setOnClickListener {
-                with(favoritedStatusProvider){
-                    val time = System.currentTimeMillis()
-                    if (time - lastAddToFavoritesTime >= cooldown) {
-                        Log.d("DATABASE", "Add")
-                        getFavoriteAddedListener().invoke(position)
-                        favoriteBtn.visibility = View.GONE
-                        unfavoriteBtn.visibility = View.VISIBLE
-
-                        lastAddToFavoritesTime = time
-                        // Reset the toastShown flag
-                        toastShown = false
-                    } else if (!toastShown){
-                        Toast.makeText(context, "Dude, hold on a second..", Toast.LENGTH_SHORT).show()
-                        toastShown = true
-                    }
-                }
-            }
-
-            unfavoriteBtn.setOnClickListener {
-                with(favoritedStatusProvider){
-                    val time = System.currentTimeMillis()
-                    if (time - lastAddToFavoritesTime >= cooldown) {
-                        Log.d("DATABASE", "Remove")
-                        getFavoriteRemovedListener().invoke(position)
-                        unfavoriteBtn.visibility = View.GONE
-                        favoriteBtn.visibility = View.VISIBLE
-
-                        lastAddToFavoritesTime = time
-                        // Reset the toastShown flag
-                        toastShown = false
-                    } else if (!toastShown){
-                        Toast.makeText(context, "Dude, hold on a second..", Toast.LENGTH_SHORT).show()
-                        toastShown = true
-                    }
-                }
-            }
-        }
-    }
-
-    private fun handleEditButton(viewHolder: ViewHolder, event: Event) {
-        if(event.userID == user?.uid){
-            viewHolder.editBtn.visibility = View.VISIBLE
-        } else {
-            viewHolder.editBtn.visibility = View.GONE
-        }
-    }
-
-    private fun handleDeleteButton(viewHolder: ViewHolder, event: Event) {
-        if(event.userID == user?.uid){
-            viewHolder.deleteBtn.visibility = View.VISIBLE
-        } else {
-            viewHolder.deleteBtn.visibility = View.GONE
-        }
-    }
-
-    private fun handleFavorites(viewHolder: ViewHolder, event: Event) {
-        val isFavorite = favoritedStatusProvider.isEventFavorited(event)
-        val userIsInvalid = (user == null || user.isAnonymous)
-
-        with(viewHolder){
-            if(isFavorite) {
-                favoriteBtn.visibility = View.GONE
-                unfavoriteBtn.visibility = View.VISIBLE
-            } else {
-                favoriteBtn.visibility = View.VISIBLE
-                unfavoriteBtn.visibility = View.GONE
-            }
-
-            if (userIsInvalid) {
-                favoriteBtn.visibility = View.GONE
-                unfavoriteBtn.visibility = View.GONE
-            }
-        }
-    }
-
-    private fun setText(viewHolder: ViewHolder, event: Event) {
-        with(viewHolder){
-            title.text = event.title
-            type.text = event.typeString
-            description.text = event.description
-            location.text = event.location
-            date.text = event.dateString
-        }
+        loadImages(viewHolder, event)               // Load images using Picasso
+        setText(viewHolder, event)                  // Set text from Event
+        setVisibility(viewHolder, event)            // Set visibility based on login status
+        setListeners(viewHolder, event, position)   // Setup listeners for each button
     }
 
     private fun loadImages(viewHolder: ViewHolder, event: Event) {
@@ -188,8 +78,72 @@ class EventAdapter(
         }
     }
 
-    fun refreshData(events: List<Event>){
-        data = events
-        notifyDataSetChanged()
+    private fun setText(viewHolder: ViewHolder, event: Event) {
+        Log.d("EVENT ADAPTER", "Set Text")
+        with(viewHolder){
+            title.text = event.title
+            type.text = event.typeString
+            description.text = event.description
+            location.text = event.location
+            date.text = event.dateString
+        }
+    }
+
+    private fun setVisibility(viewHolder: ViewHolder, event: Event) {
+        Log.d("EVENT ADAPTER", "Set Visibility")
+        with(viewHolder){
+            // Edit Button
+            if(event.userID == user?.uid){
+                editBtn.visibility = View.VISIBLE
+            } else {
+                editBtn.visibility = View.GONE
+            }
+
+            // Delete Button
+            if(event.userID == user?.uid){
+                viewHolder.deleteBtn.visibility = View.VISIBLE
+            } else {
+                viewHolder.deleteBtn.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun setListeners(viewHolder: ViewHolder, event: Event,position: Int) {
+        Log.d("EVENT ADAPTER", "Set Listeners")
+        with(viewHolder){
+            Log.d("EVENT ADAPTER", "Set editBtn Listener")
+            editBtn.setOnClickListener {
+                onClickListener.onEditEventClicked(event, position)
+            }
+
+            Log.d("EVENT ADAPTER", "Set infoBtn Listener")
+            infoBtn.setOnClickListener {
+                onClickListener.onInfoEventClicked(event, position)
+            }
+
+            Log.d("EVENT ADAPTER", "Set favoriteBtn Listener")
+            favoriteBtn.setOnClickListener {
+                coroutineScope.launch(Dispatchers.Main) {
+                    repository.isFavorite(event) { isFavorite ->
+                        favoriteCallback(isFavorite)
+                        if (isFavorite) {
+                            repository.removeFavorite(event)
+                            favoriteBtn.setIconResource(R.drawable.outline_favorite_border_24)
+                        } else {
+                            repository.createFavorite(event)
+                            favoriteBtn.setIconResource(R.drawable.baseline_favorite_24)
+                        }
+                    }
+                }
+            }
+
+            Log.d("EVENT ADAPTER", "Set deleteBtn Listener")
+            favoriteBtn.setOnClickListener {
+                coroutineScope.launch(Dispatchers.Main) {
+                    repository.deleteEvent(event)
+                }
+            }
+        }
     }
 }
+
