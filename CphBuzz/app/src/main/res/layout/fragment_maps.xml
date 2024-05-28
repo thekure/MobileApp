@@ -26,7 +26,6 @@
         map:uiZoomControls="true"
         map:uiZoomGestures="true" />
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -41,6 +40,7 @@
         android:layout_marginStart="@dimen/margin_small_8"
         android:layout_marginTop="@dimen/margin_small_8"
         android:hint="@string/latitude"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -54,6 +54,7 @@
         android:cursorVisible="false"
         android:focusable="false"
         android:focusableInTouchMode="false"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/text_field_latitude"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -67,6 +68,7 @@
         android:layout_marginStart="@dimen/margin_small_8"
         android:layout_marginTop="@dimen/margin_small_8"
         android:hint="@string/longitude"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/text_field_latitude"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -80,6 +82,7 @@
         android:cursorVisible="false"
         android:focusable="false"
         android:focusableInTouchMode="false"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/text_field_longitude"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -94,6 +97,7 @@
         android:layout_marginStart="@dimen/margin_small_8"
         android:layout_marginTop="@dimen/margin_small_8"
         android:hint="@string/altitude"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/text_field_longitude"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -107,6 +111,7 @@
         android:cursorVisible="false"
         android:focusable="false"
         android:focusableInTouchMode="false"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/text_field_longitude"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -120,6 +125,7 @@
         android:cursorVisible="false"
         android:focusable="false"
         android:focusableInTouchMode="false"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/text_field_altitude"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -132,6 +138,7 @@
         android:cursorVisible="false"
         android:focusable="false"
         android:focusableInTouchMode="false"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/text_field_altitude"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>

@@ -69,7 +69,8 @@ class CreateEventDialogFragment(
             editTextEventDate.setText("Wed, May 15 2024")
             editTextEventDescription.setText("Test Description")
             editTextEventImage.setText("https://picsum.photos/seed/290/400/194")
-
+            editTextEventLatitude.setText("55.659879")
+            editTextEventLongitude.setText("12.59149")
         }
         // Remove above binding block
 
@@ -101,7 +102,6 @@ class CreateEventDialogFragment(
         with(binding) {
             // Only execute the following code when the user fills all fields
             if (checkInputValidity()) {
-
                 val event = Event(
                     userID = model.getUser()!!.uid,
                     title = editTextEventName.text.toString().trim(),
@@ -111,7 +111,9 @@ class CreateEventDialogFragment(
                     dateString = getDateString(startDateFromSelection, endDateFromSelection),
                     typeString = autoCompleteEventTypes.text.toString(),
                     description = editTextEventDescription.text.toString().trim(),
-                    mainImage = editTextEventImage.text.toString().trim()
+                    mainImage = editTextEventImage.text.toString().trim(),
+                    latitude = editTextEventLatitude.text.toString().trim().toDouble(),
+                    longitude = editTextEventLongitude.text.toString().trim().toDouble()
                 )
 
                 event.type = getTypeIndex(event.typeString!!)
@@ -121,7 +123,7 @@ class CreateEventDialogFragment(
                 showToast("Event created.")
                 return true
             } else {
-                showToast("You need to fill out all fields first.")
+                showToast("Fill out all fields. Have you tried scrolling?")
                 return false
             }
         }
@@ -140,6 +142,8 @@ class CreateEventDialogFragment(
             autoCompleteEventTypes.setText(event.typeString, false)
             editTextEventDescription.setText(event.description)
             editTextEventImage.setText(event.mainImage)
+            editTextEventLatitude.setText(event.latitude.toString())
+            editTextEventLongitude.setText(event.longitude.toString())
         }
 
         return MaterialAlertDialogBuilder(requireContext())
@@ -177,6 +181,8 @@ class CreateEventDialogFragment(
                 event.description = editTextEventDescription.text.toString().trim()
                 event.mainImage = editTextEventImage.text.toString().trim()
                 event.type = getTypeIndex(event.typeString!!)
+                event.latitude = editTextEventLatitude.text.toString().trim().toDouble()
+                event.longitude = editTextEventLongitude.text.toString().trim().toDouble()
 
                 model.updateEvent(event)
                 hideKeyboard()
@@ -262,7 +268,9 @@ class CreateEventDialogFragment(
             editTextEventDate.text.toString().isNotEmpty()          &&
             autoCompleteEventTypes.text.toString().isNotEmpty()     &&
             editTextEventDescription.text.toString().isNotEmpty()   &&
-            editTextEventImage.text.toString().isNotEmpty()
+            editTextEventImage.text.toString().isNotEmpty()         &&
+            editTextEventLatitude.text.toString().isNotEmpty()      &&
+            editTextEventLongitude.text.toString().isNotEmpty()
         }
 
     /**
@@ -285,14 +293,17 @@ class CreateEventDialogFragment(
      * Helper function to convert dates from long to string.
      */
     private fun getDateString(startDate: Long?, endDate: Long?): String{
-        if(startDate == null || endDate == null) return ""
+        if(startDate == null && endDate == null) return ""
         /**
          * Defines the wanted display format for the dates.
          * Currently set to: EEE, MMM dd yyyy.
          */
         val dateFormat = SimpleDateFormat("EEE, MMM dd yyyy", Locale.ENGLISH)
-        val startDateAsString = dateFormat.format(Date(startDate))
-        val endDateAsString = dateFormat.format(Date(endDate))
+        var startDateAsString = ""
+        var endDateAsString = ""
+        if(startDate != null) startDateAsString = dateFormat.format(Date(startDate))
+        if(endDate != null) endDateAsString = dateFormat.format(Date(endDate))
+
 
         if(startDateAsString == endDateAsString) return startDateAsString
 

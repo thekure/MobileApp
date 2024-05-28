@@ -45,6 +45,7 @@ class TimelineFragment : Fragment() {
                 resource = R.layout.event_row_item,
                 data = events,
                 onEditEventClicked = this::showEditEventDialog,
+                onEventInfoClicked = this::showEventInfoDialog,
                 user = _model.getUser(),
                 favoritedStatusProvider = favoritedStatusProvider
             )
@@ -58,6 +59,14 @@ class TimelineFragment : Fragment() {
             isCancelable = true
         }.also { dialogFragment ->
             dialogFragment.show(childFragmentManager, "CreateEventDialogFragment")
+        }
+    }
+
+    private fun showEventInfoDialog(position: Int) {
+        EventInfoDialogFragment(position).apply {
+            isCancelable = true
+        }.also { dialogFragment ->
+            dialogFragment.show(childFragmentManager, "EventInfoDialogFragment")
         }
     }
 
