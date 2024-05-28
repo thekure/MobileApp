@@ -28,7 +28,7 @@ import java.util.Locale
  */
 class CreateEventDialogFragment(
     private val isEdit: Boolean = false,
-    private val position: Int = -1
+    private val position: Int = 0
 ) : DialogFragment() {
 
     private var _binding: DialogCreateEventBinding? = null

@@ -289,7 +289,9 @@ class EventRepository {
     fun listenForFavorites(callback: (FavoriteOperation) -> Unit){
         initFavoritesListener(callback)
         // Listen on favorites/$uid path
-        favoritesRef.child(auth.currentUser!!.uid).addChildEventListener(favoritesListener)
+        if(auth.currentUser?.uid != null){
+            favoritesRef.child(auth.currentUser!!.uid).addChildEventListener(favoritesListener)
+        }
     }
 
     /**
