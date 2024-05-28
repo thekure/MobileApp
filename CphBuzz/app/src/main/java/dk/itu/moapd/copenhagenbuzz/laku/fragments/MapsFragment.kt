@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Build
@@ -186,7 +187,7 @@ class MapsFragment : Fragment() {
                 for (eventSnapshot in dataSnapshot.children) {
                     val longitude = eventSnapshot.child("longitude").getValue(Double::class.java)
                     val latitude = eventSnapshot.child("latitude").getValue(Double::class.java)
-                    val name = eventSnapshot.child("eventName").getValue(String::class.java)
+                    val name = eventSnapshot.child("title").getValue(String::class.java)
 
                     if (longitude != null && latitude != null) {
                         val thislocation = LatLng(latitude, longitude)

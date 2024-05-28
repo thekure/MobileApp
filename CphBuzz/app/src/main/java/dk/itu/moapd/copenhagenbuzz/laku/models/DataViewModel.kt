@@ -20,6 +20,7 @@
  */
 package dk.itu.moapd.copenhagenbuzz.laku.models
 
+import android.location.Location
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -77,6 +78,7 @@ class DataViewModel(
         startListeningForEvents()
         startListeningForFavorites()
     }
+
 
     /**
      * Populates the collections from the database on startup.

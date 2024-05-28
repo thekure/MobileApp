@@ -6,6 +6,7 @@ import android.content.Context
 import android.location.Geocoder
 import android.os.AsyncTask
 import android.os.Bundle
+import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -17,6 +18,7 @@ import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.DialogCreateEventBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
+import dk.itu.moapd.copenhagenbuzz.laku.services.LocationService
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -37,8 +39,6 @@ class CreateEventDialogFragment(
         get() = requireNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
         }
-    private var latitude = 0.0
-    private var longitude = 0.0
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         super.onCreateDialog(savedInstanceState)
@@ -73,6 +73,7 @@ class CreateEventDialogFragment(
         }
         // Remove above binding block
 
+
         return MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.create_event)
             .setView(binding.root)
@@ -89,6 +90,7 @@ class CreateEventDialogFragment(
             }
     }
 
+
     /**
      * Handler function for the add event button.
      * - Creates new event if all fields have content.
@@ -99,21 +101,17 @@ class CreateEventDialogFragment(
         with(binding) {
             // Only execute the following code when the user fills all fields
             if (checkInputValidity()) {
-                val location = editTextEventLocation.text.toString().trim()
-                fetchCoordinatesAndCreateEvent(location)
+
                 val event = Event(
                     userID = model.getUser()!!.uid,
                     title = editTextEventName.text.toString().trim(),
-                    location = location,
+                    location = editTextEventLocation.text.toString().trim(),
                     startDate = startDateFromSelection,
                     endDate = endDateFromSelection,
                     dateString = getDateString(startDateFromSelection, endDateFromSelection),
                     typeString = autoCompleteEventTypes.text.toString(),
                     description = editTextEventDescription.text.toString().trim(),
-                    mainImage = editTextEventImage.text.toString().trim(),
-
-                    latitude = latitude,
-                    longitude = longitude
+                    mainImage = editTextEventImage.text.toString().trim()
                 )
 
                 event.type = getTypeIndex(event.typeString!!)
@@ -185,7 +183,7 @@ class CreateEventDialogFragment(
                 showToast("Event updated.")
                 return true
             } else {
-                showToast("You need to fill out all fields first.")
+                showToast("Fill out all fields. Have you tried scrolling?")
                 return false
             }
         }
@@ -314,29 +312,6 @@ class CreateEventDialogFragment(
         val currentFocusedView = requireActivity().currentFocus
         if (currentFocusedView != null) {
             imm.hideSoftInputFromWindow(currentFocusedView.windowToken, 0)
-        }
-    }
-
-    private fun fetchCoordinatesAndCreateEvent(location: String) {
-        val geocoder = Geocoder(requireContext(), Locale.getDefault())
-        AsyncTask.execute {
-            try {
-                val addressList = geocoder.getFromLocationName(location, 1)
-                if (addressList != null && addressList.isNotEmpty()) {
-                    val address = addressList[0]
-                    latitude = address.latitude
-                    longitude = address.longitude
-
-                } else {
-                    activity?.runOnUiThread {
-                        showToast("Could not find coordinates for the provided location.")
-                    }
-                }
-            } catch (e: Exception) {
-                activity?.runOnUiThread {
-                    showToast("Geocoding failed: ${e.message}")
-                }
-            }
         }
     }
 
