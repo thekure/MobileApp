@@ -2,24 +2,16 @@ package dk.itu.moapd.copenhagenbuzz.laku.adapters
 
 import android.content.Context
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
-import androidx.core.view.isVisible
 import com.firebase.ui.database.FirebaseListAdapter
 import com.firebase.ui.database.FirebaseListOptions
 import com.google.android.material.button.MaterialButton
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.storage.FirebaseStorage
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.interfaces.EventBtnListener
-import dk.itu.moapd.copenhagenbuzz.laku.interfaces.FavoritedStatusProvider
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import dk.itu.moapd.copenhagenbuzz.laku.repositories.EventRepository
 import kotlinx.coroutines.CoroutineScope
@@ -27,14 +19,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
-class EventAdapter(option: FirebaseListOptions<Event>,
-                   private val context: Context?,
-                   private val repository: EventRepository,
-                   private val coroutineScope: CoroutineScope,
-                   private val user: FirebaseUser?,
-                   private val onClickListener: EventBtnListener
+class EventAdapter(
+    options: FirebaseListOptions<Event>,
+    private val context: Context?,
+    private val repository: EventRepository,
+    private val coroutineScope: CoroutineScope,
+    private val user: FirebaseUser?,
+    private val onClickListener: EventBtnListener
 
-): FirebaseListAdapter<Event>(option){
+): FirebaseListAdapter<Event>(options){
     private lateinit var favoriteCallback: (Boolean) -> Unit
 
     fun setFavoriteCallback(callback: (Boolean) -> Unit) {

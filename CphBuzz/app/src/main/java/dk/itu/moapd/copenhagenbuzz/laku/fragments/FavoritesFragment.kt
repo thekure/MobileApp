@@ -5,17 +5,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.firebase.ui.database.FirebaseRecyclerOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+import dk.itu.moapd.copenhagenbuzz.laku.DATABASE_URL
 import dk.itu.moapd.copenhagenbuzz.laku.adapters.FavoriteAdapter
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.FragmentFavoritesBinding
-import dk.itu.moapd.copenhagenbuzz.laku.interfaces.EventFavoriteStatusProvider
-import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
+import dk.itu.moapd.copenhagenbuzz.laku.interfaces.FavoriteBtnListener
+import dk.itu.moapd.copenhagenbuzz.laku.models.Event
+import dk.itu.moapd.copenhagenbuzz.laku.repositories.EventRepository
 
-class FavoritesFragment : Fragment() {
+class FavoritesFragment : Fragment(), FavoriteBtnListener {
     private var _binding: FragmentFavoritesBinding? = null
-    private lateinit var _model: DataViewModel
+    private lateinit var _repo: EventRepository
+    private lateinit var adapter: FavoriteAdapter
+    private val db = Firebase.database(DATABASE_URL).reference
 
     private val binding
         get() = requireNotNull(_binding) {
@@ -37,37 +43,48 @@ class FavoritesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        _model = ViewModelProvider(requireActivity())[DataViewModel::class.java]
-        val favoritedStatusProvider = EventFavoriteStatusProvider(_model)
-        val isValidUser = _model.loggedIn()
+        _repo = EventRepository()
+        db.keepSynced(true)
 
-        if(isValidUser){
-            _model.favorites.observe(viewLifecycleOwner) { favorites ->
-                val adapter = FavoriteAdapter(
-                    data = favorites,
-                    favoritedStatusProvider = favoritedStatusProvider,
-                    user = _model.getUser()
-                )
+        FirebaseAuth.getInstance().currentUser?.let { user ->
+            val query = db
+                .child("copenhagen_buzz")
+                .child("favorites")
+                .child(user.uid)
 
-                with(binding) {
-                    recyclerView.layoutManager = LinearLayoutManager(requireContext())
-                    recyclerView.adapter = adapter
+            val options = FirebaseRecyclerOptions.Builder<Event>()
+                .setQuery(query, Event::class.java)
+                .setLifecycleOwner(this)
+                .build()
+
+            adapter = FavoriteAdapter(options, this)
+
+            with(binding) {
+                recyclerView.layoutManager = LinearLayoutManager(requireContext())
+                recyclerView.adapter = adapter
+
+                val isValidUser = user != null && !user.isAnonymous
+
+                if (isValidUser) {
                     notLoggedIn.visibility = View.GONE
+                } else {
+                    recyclerView.visibility = View.GONE
+                    notLoggedIn.visibility = View.VISIBLE
                 }
-
-                adapter.refreshData(favorites)
-            }
-        } else {
-            with(binding){
-                recyclerView.visibility = View.GONE
-                notLoggedIn.visibility = View.VISIBLE
             }
         }
+
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+
+    override fun onFavoriteBtnClicked(adapter: FavoriteAdapter, position: Int) {
+        adapter.getRef(position).removeValue()
+    }
+
+    fun clearFavoriteAdapter() {
+        with(binding) {
+            recyclerView.adapter = null
+        }
     }
 }
 
