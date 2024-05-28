@@ -164,7 +164,21 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 
-
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_delete"
+                    style="?attr/materialIconButtonFilledStyle"
+                    android:backgroundTint="@color/red"
+                    android:layout_width="@dimen/btn_width_standard_88"
+                    android:layout_height="@dimen/btn_height_standard_48"
+                    android:layout_marginTop="@dimen/margin_tiny_4"
+                    android:layout_marginEnd="@dimen/margin_tiny_4"
+                    android:layout_marginStart="@dimen/margin_medium_16"
+                    android:layout_marginBottom="@dimen/margin_small_8"
+                    android:text="@string/delete"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:visibility="gone"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_edit"

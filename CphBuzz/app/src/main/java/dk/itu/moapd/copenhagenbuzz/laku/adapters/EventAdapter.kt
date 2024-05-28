@@ -44,6 +44,7 @@ class EventAdapter(
         val description: TextView = view.findViewById(R.id.item_event_description)
         val favoriteBtn: MaterialButton = view.findViewById(R.id.event_btn_favorite)
         val unfavoriteBtn: MaterialButton = view.findViewById(R.id.event_btn_unfavorite)
+        val deleteBtn: MaterialButton = view.findViewById(R.id.button_delete)
         val editBtn: MaterialButton = view.findViewById(R.id.button_edit)
         val infoBtn: MaterialButton = view.findViewById(R.id.button_info)
     }
@@ -69,11 +70,12 @@ class EventAdapter(
      */
     private fun populateViewHolder(viewHolder: ViewHolder, event: Event, position: Int) {
         // Fill out the Material Design card.
-        loadImages(viewHolder, event)       // Load images using Picasso
-        setText(viewHolder, event)          // Set text from Event
-        handleFavorites(viewHolder, event)  // Set icon for fave button
-        handleEditButton(viewHolder, event) // Set visibility based on login status
-        setListeners(viewHolder, position)  // Setup listeners for each button
+        loadImages(viewHolder, event)           // Load images using Picasso
+        setText(viewHolder, event)              // Set text from Event
+        handleFavorites(viewHolder, event)      // Set icon for fave button
+        handleEditButton(viewHolder, event)     // Set visibility based on login status
+        handleDeleteButton(viewHolder, event)   // Set visibility based on login status
+        setListeners(viewHolder, position)      // Setup listeners for each button
     }
 
     private fun setListeners(viewHolder: ViewHolder, position: Int) {
@@ -131,6 +133,14 @@ class EventAdapter(
             viewHolder.editBtn.visibility = View.VISIBLE
         } else {
             viewHolder.editBtn.visibility = View.GONE
+        }
+    }
+
+    private fun handleDeleteButton(viewHolder: ViewHolder, event: Event) {
+        if(event.userID == user?.uid){
+            viewHolder.deleteBtn.visibility = View.VISIBLE
+        } else {
+            viewHolder.deleteBtn.visibility = View.GONE
         }
     }
 
