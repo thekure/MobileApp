@@ -23,6 +23,7 @@ class EventAdapter(
     private var data: List<Event>,
     private val onEditEventClicked: (Int) -> Unit,
     private val onEventInfoClicked: (Int) -> Unit,
+    private val onDeleteEventClicked: (Int) -> Unit,
     private val user: FirebaseUser?,
     private val favoritedStatusProvider: FavoritedStatusProvider
 ): ArrayAdapter<Event>(
@@ -86,6 +87,10 @@ class EventAdapter(
 
             infoBtn.setOnClickListener {
                 onEventInfoClicked(position)
+            }
+
+            deleteBtn.setOnClickListener {
+                onDeleteEventClicked(position)
             }
 
             favoriteBtn.setOnClickListener {

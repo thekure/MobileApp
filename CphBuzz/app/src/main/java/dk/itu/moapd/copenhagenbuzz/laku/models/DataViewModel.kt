@@ -152,6 +152,7 @@ class DataViewModel(
                             try{
                                 val deletedFavorite = _repo.readEvent(event)
                                 if(deletedFavorite != null) favorites.remove(deletedFavorite)
+                                favorites.removeAll { it.eventID == event }
                             } catch (e: Exception){
                                 Log.d("DATABASE", "Encountered error when trying to remove a favorite. Error message: $e\"")
                             }

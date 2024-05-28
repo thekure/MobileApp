@@ -1,6 +1,7 @@
 package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,6 +47,7 @@ class TimelineFragment : Fragment() {
                 data = events,
                 onEditEventClicked = this::showEditEventDialog,
                 onEventInfoClicked = this::showEventInfoDialog,
+                onDeleteEventClicked = this::deleteEventClicked,
                 user = _model.getUser(),
                 favoritedStatusProvider = favoritedStatusProvider
             )
@@ -68,6 +70,15 @@ class TimelineFragment : Fragment() {
         }.also { dialogFragment ->
             dialogFragment.show(childFragmentManager, "EventInfoDialogFragment")
         }
+    }
+
+    private fun deleteEventClicked(position: Int){
+        val favoritedStatusProvider = EventFavoriteStatusProvider(_model)
+        val event = _model.getEventAtIndex(position)
+        if(favoritedStatusProvider.isEventFavorited(event)) {
+            _model.removeFromFavorites(event)
+        }
+        _model.deleteEvent(event)
     }
 
     override fun onDestroyView() {

@@ -156,6 +156,7 @@ class EventRepository {
     fun removeFavorite(event: Event) {
         val user = auth.currentUser
         user?.let {
+            Log.d("DATABASE", "Event ID: " + event.eventID )
             favoritesRef
                 .child(user.uid)
                 .child(event.eventID!!)
