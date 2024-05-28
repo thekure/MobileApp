@@ -201,7 +201,6 @@
                 app:startIconContentDescription="Event longitude"
                 app:endIconMode="clear_text"
                 app:layout_constraintTop_toBottomOf="@id/text_field_event_latitude"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 
@@ -212,6 +211,30 @@
                     android:inputType="text"/>
 
             </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/takePicBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/take_picture"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="@dimen/margin_medium_16"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/uploadBtn"
+                app:layout_constraintTop_toBottomOf="@id/text_field_event_longitude"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <Button
+                android:id="@+id/uploadBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/upload_image"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="@dimen/margin_medium_16"
+                app:layout_constraintStart_toEndOf="@id/takePicBtn"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/text_field_event_longitude"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
