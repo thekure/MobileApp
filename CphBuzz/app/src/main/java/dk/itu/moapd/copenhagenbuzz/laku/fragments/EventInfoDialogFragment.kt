@@ -31,7 +31,6 @@ class EventInfoDialogFragment(
         with(binding){
             with(event){
                 mainImage.let { url ->
-                    imageViewPhoto.imageTintMode = null
                     Picasso.get().load(url).into(imageViewPhoto)
                 }
                 editTextEventName.setText(title)
