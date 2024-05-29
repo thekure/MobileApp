@@ -150,7 +150,7 @@
                 android:layout_marginStart="@dimen/margin_small_8"
                 android:layout_marginEnd="@dimen/margin_small_8"
                 android:layout_marginTop="@dimen/margin_medium_16"
-                android:hint="@string/event_image"
+                android:hint="@string/upload_image_please"
                 app:startIconContentDescription="Event image url"
                 app:endIconMode="clear_text"
                 app:layout_constraintTop_toBottomOf="@id/text_field_event_description"
@@ -162,8 +162,7 @@
                     android:id="@+id/edit_text_event_image"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text"
-                    android:text="@string/default_image_url"/>
+                    android:inputType="text"/>
 
             </com.google.android.material.textfield.TextInputLayout>
 
