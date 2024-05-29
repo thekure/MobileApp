@@ -4,12 +4,14 @@ package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.DialogEventInfoBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
+import dk.itu.moapd.copenhagenbuzz.laku.utilities.WeatherUtil
 
 class EventInfoDialogFragment(
     private val event: Event
@@ -38,6 +40,9 @@ class EventInfoDialogFragment(
                 editTextEventDate.setText(dateString)
                 editTextEventType.setText(typeString)
                 editTextEventDescription.setText(description)
+
+                getWeather(event.latitude, event.longitude)
+
             }
 
         }
@@ -55,6 +60,20 @@ class EventInfoDialogFragment(
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun getWeather(lat: Double?, lon: Double?){
+        if (lat != null && lon != null) {
+            WeatherUtil.OpenMeteoApi.getCurrentTemperature(lat, lon) { temp ->
+                activity?.runOnUiThread {
+                    binding.textFieldEventWeather.text = temp?.let {
+                        getString(R.string.temperature_text, it)
+                    } ?: getString(R.string.temperature_unavailable)
+                }
+            }
+        } else {
+            binding.textFieldEventWeather.text = getString(R.string.temperature_unavailable)
+        }
     }
 }
 
