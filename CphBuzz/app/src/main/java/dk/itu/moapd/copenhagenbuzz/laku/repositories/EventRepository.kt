@@ -2,6 +2,7 @@ package dk.itu.moapd.copenhagenbuzz.laku.repositories
 
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import dk.itu.moapd.copenhagenbuzz.laku.DATABASE_URL
@@ -64,7 +65,7 @@ class EventRepository {
                         .child(eventID)
                         .setValue(event)
                         .addOnSuccessListener {
-                            Log.d("Tag: DATABASE", "Created updated successfully.")
+                            Log.d("Tag: DATABASE", "Updated event successfully.")
                         }
                 }
             }
@@ -88,6 +89,8 @@ class EventRepository {
                         Log.e("Tag: DATABASE", "Error removing favorite", error)
                     }
             }
+
+            removeDeletedEventFromAllFavorites(event, user)
         }
     }
 
@@ -107,6 +110,36 @@ class EventRepository {
                         .child(event.eventID!!)
                         .setValue(event)
                 }
+        }
+    }
+
+    private fun removeDeletedEventFromAllFavorites(event: Event, user: FirebaseUser){
+        user.let {
+            Log.d("Tag: DATABASE", "Removing event with ID: ${event.eventID} from all favorite tables.")
+            favoritesRef.get().addOnSuccessListener { dataSnapshot ->
+                if (dataSnapshot.exists()) {
+                    for (userSnapshot in dataSnapshot.children) {
+                        val userId = userSnapshot.key
+                        userId?.let {
+                            val userFavoritesRef = favoritesRef.child(it)
+                            userFavoritesRef.child(event.eventID!!).get().addOnSuccessListener { eventSnapshot ->
+                                if (eventSnapshot.exists()) {
+                                    // Event found, remove it from this user's favorites
+                                    userFavoritesRef.child(event.eventID!!).removeValue()
+                                        .addOnSuccessListener {
+                                            Log.d("Tag: DATABASE", "Event ID: ${event.eventID} removed from user: $it favorites.")
+                                        }
+                                        .addOnFailureListener { error ->
+                                            Log.e("Tag: DATABASE", "Error removing event from user: $it favorites", error)
+                                        }
+                                }
+                            }
+                        }
+                    }
+                }
+            }.addOnFailureListener { error ->
+                Log.e("Tag: DATABASE", "Error fetching favorites", error)
+            }
         }
     }
 
@@ -138,7 +171,9 @@ class EventRepository {
                 .child(uid)
                 .get()
                 .addOnSuccessListener { result ->
-                    val isFavorite = result.children.any { it.key == event.userID }
+                    val isFavorite = result.children.any {
+                        it.key == event.eventID
+                    }
                     callback(isFavorite)
                 }
                 .addOnCanceledListener {

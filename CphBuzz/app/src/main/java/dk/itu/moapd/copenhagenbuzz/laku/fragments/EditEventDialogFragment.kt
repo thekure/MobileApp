@@ -1,6 +1,7 @@
 package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
@@ -17,29 +18,39 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.get
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.storage
 import com.google.mlkit.vision.label.ImageLabeler
+import dk.itu.moapd.copenhagenbuzz.laku.BUCKET_URL
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.DialogCreateEventBinding
+import dk.itu.moapd.copenhagenbuzz.laku.databinding.DialogEditEventBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import dk.itu.moapd.copenhagenbuzz.laku.repositories.EventRepository
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
 class EditEventDialogFragment(
     private val event: Event
 ) : DialogFragment() {
 
-    private var _binding: DialogCreateEventBinding? = null
+    private var _binding: DialogEditEventBinding? = null
     private var startDateFromSelection: Long? = null
     private var endDateFromSelection:   Long? = null
-    private lateinit var storage: FirebaseStorage
+    private var imageUri: Uri? = null
+    private lateinit var downloadUrl: Uri
+    private lateinit var storage: StorageReference
     private lateinit var _repo: EventRepository
+    private var imageUpdated = false
     private val binding
         get() = requireNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
@@ -47,8 +58,9 @@ class EditEventDialogFragment(
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         super.onCreateDialog(savedInstanceState)
-        _binding = DialogCreateEventBinding.inflate(layoutInflater)
+        _binding = DialogEditEventBinding.inflate(layoutInflater)
         _repo = EventRepository()
+        imageUpdated = false
 
         if (!checkPermission()){
             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
@@ -57,6 +69,7 @@ class EditEventDialogFragment(
         setupEventTypeDropdown()
         setDatePickerListener()
         setupImageButtons()
+        storage = Firebase.storage(BUCKET_URL).reference
 
         // Return appropriate dialog variant
         return buildEditEventDialog(event)
@@ -70,6 +83,7 @@ class EditEventDialogFragment(
     /**
      * Create and return an edit event dialog.
      */
+    @SuppressLint("SetTextI18n")
     private fun buildEditEventDialog(event: Event): androidx.appcompat.app.AlertDialog {
 
         with(binding){
@@ -78,7 +92,7 @@ class EditEventDialogFragment(
             editTextEventDate.setText(event.dateString)
             autoCompleteEventTypes.setText(event.typeString, false)
             editTextEventDescription.setText(event.description)
-            editTextEventImage.setText(event.mainImage)
+            editTextEventImage.setText("Press a button below to update existing image.")
             editTextEventLatitude.setText(event.latitude.toString())
             editTextEventLongitude.setText(event.longitude.toString())
         }
@@ -87,7 +101,7 @@ class EditEventDialogFragment(
             .setTitle(R.string.edit_event)
             .setView(binding.root)
             .setPositiveButton(R.string.save, null)
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setNeutralButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
             }
             .create().apply {
@@ -111,15 +125,25 @@ class EditEventDialogFragment(
             if (checkInputValidity()) {
                 event.title = editTextEventName.text.toString().trim()
                 event.location = editTextEventLocation.text.toString().trim()
-                event.startDate = startDateFromSelection
-                event.endDate = endDateFromSelection
-                event.dateString = getDateString(startDateFromSelection, endDateFromSelection)
+                event.startDate = event.startDate
+                event.endDate = event.endDate
                 event.typeString = autoCompleteEventTypes.text.toString()
                 event.description = editTextEventDescription.text.toString().trim()
-                event.mainImage = editTextEventImage.text.toString().trim()
                 event.type = getTypeIndex(event.typeString!!)
                 event.latitude = editTextEventLatitude.text.toString().trim().toDouble()
                 event.longitude = editTextEventLongitude.text.toString().trim().toDouble()
+
+                if(startDateFromSelection == null){
+                    event.dateString = getDateString(event.startDate, event.endDate)
+                } else {
+                    event.dateString = getDateString(startDateFromSelection, endDateFromSelection)
+                }
+
+                if(imageUpdated){
+                    event.mainImage = downloadUrl.toString()
+                } else {
+                    event.mainImage = event.mainImage
+                }
 
                 _repo.updateEvent(event)
                 hideKeyboard()
@@ -201,13 +225,13 @@ class EditEventDialogFragment(
     private fun checkInputValidity(): Boolean =
         with(binding){
             editTextEventName.text.toString().isNotEmpty()          &&
-                    editTextEventLocation.text.toString().isNotEmpty()      &&
-                    editTextEventDate.text.toString().isNotEmpty()          &&
-                    autoCompleteEventTypes.text.toString().isNotEmpty()     &&
-                    editTextEventDescription.text.toString().isNotEmpty()   &&
-                    editTextEventImage.text.toString().isNotEmpty()         &&
-                    editTextEventLatitude.text.toString().isNotEmpty()      &&
-                    editTextEventLongitude.text.toString().isNotEmpty()
+            editTextEventLocation.text.toString().isNotEmpty()      &&
+            editTextEventDate.text.toString().isNotEmpty()          &&
+            autoCompleteEventTypes.text.toString().isNotEmpty()     &&
+            editTextEventDescription.text.toString().isNotEmpty()   &&
+            editTextEventImage.text.toString().isNotEmpty()         &&
+            editTextEventLatitude.text.toString().isNotEmpty()      &&
+            editTextEventLongitude.text.toString().isNotEmpty()
         }
 
     /**
@@ -264,13 +288,6 @@ class EditEventDialogFragment(
     }
 
 
-
-    private var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-    private var imageCapture: ImageCapture? = null
-    private var imageUri: Uri? = null
-    private lateinit var labeler : ImageLabeler
-
-
     companion object {
         private const val FILENAME_FORMAT = "yyyyMMdd_HHmmss"
     }
@@ -280,29 +297,38 @@ class EditEventDialogFragment(
     ) { didTakePhoto: Boolean ->
         if(didTakePhoto && imageUri != null) {
             Log.d("Tag: CAM", "takePhoto")
-            // HANDLE SUCCESS HERE
+            uploadImageToBucket(imageUri!!)
         }
     }
 
-    private val pickPhotoFromGallery = registerForActivityResult(
-        ActivityResultContracts.PickVisualMedia()
-    ) { photoUri ->
-        photoUri?.let {
-            Log.d("Tag: CAM", "pickPhotoFromGallery, imageUri: $imageUri")
-            imageUri = it
-        }
+    @SuppressLint("SetTextI18n")
+    private fun uploadImageToBucket(uri: Uri){
+        val name = generateUniqueName()
+        Log.d("Tag: CAM", "Generated image name: $name")
+        storage.child(name).putFile(uri)
+            .addOnSuccessListener {
+                storage.child(name).downloadUrl
+                    .addOnSuccessListener {
+                        Log.d("Tag: CAM", "Saved downloadUrl as $it")
+                        downloadUrl = it
+                        binding.editTextEventImage.setText("Your image was uploaded.")
+                        imageUpdated = true
+                    }
+            }
     }
 
     private fun setupImageButtons() {
         Log.d("Tag: CAM", "setupButtons")
-        binding.takePicBtn.setOnClickListener {
 
+        binding.uploadBtn.setOnClickListener {
+            Log.d("Tag: CAM", "uploadOnClickListener")
+            pickPhotoFromGallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        }
+
+        binding.takePicBtn.setOnClickListener {
             if (checkPermission()){
                 try{
-                    val photoName = "IMG_${
-                        SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()).format(
-                            Date()
-                        )}.JPG"
+                    val photoName = "IMG_${SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()).format(Date())}.JPG"
                     val photoFile =
                         File(requireContext().applicationContext.filesDir, photoName)
                     Log.d("Tag: CAM", "Creating image file at ${photoFile.absolutePath}")
@@ -326,28 +352,29 @@ class EditEventDialogFragment(
                 Log.d("Tag: CAM", "No permission")
             }
         }
+    }
 
-        binding.uploadBtn.setOnClickListener {
-            Log.d("Tag: CAM", "uploadOnClickListener")
-            pickPhotoFromGallery
-                .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    private val pickPhotoFromGallery = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { photoUri ->
+        photoUri?.let {
+            uploadImageToBucket(it)
         }
-
-        binding.uploadBtn.isEnabled =
-            ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(requireContext())
     }
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { _ ->
-        // cameraPermissionResult(result)
     }
-
 
     private fun checkPermission() =
         ActivityCompat.checkSelfPermission(
             requireContext(),
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
+
+    private fun generateUniqueName(): String {
+        return UUID.randomUUID().toString()
+    }
 
 }

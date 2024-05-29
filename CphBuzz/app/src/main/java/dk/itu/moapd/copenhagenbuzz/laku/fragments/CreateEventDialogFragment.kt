@@ -1,6 +1,7 @@
 package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
@@ -31,6 +32,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
 /**
  * Handles dialog fragments for both "Create Event" and "Edit Event" requests.
@@ -79,9 +81,7 @@ class CreateEventDialogFragment : DialogFragment() {
         with(binding){
             editTextEventName.setText("TestEvent")
             editTextEventLocation.setText("TestLocation")
-            editTextEventDate.setText("Wed, May 15 2024")
             editTextEventDescription.setText("Test Description")
-            editTextEventImage.setText("https://picsum.photos/seed/290/400/194")
             editTextEventLatitude.setText("55.659879")
             editTextEventLongitude.setText("12.59149")
         }
@@ -292,12 +292,17 @@ class CreateEventDialogFragment : DialogFragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun uploadImageToBucket(uri: Uri){
-        storage.child("images").putFile(uri)
+        val name = generateUniqueName()
+        Log.d("Tag: CAM", "Generated image name: $name")
+        storage.child(name).putFile(uri)
             .addOnSuccessListener {
-                storage.child("images").downloadUrl
+                storage.child(name).downloadUrl
                     .addOnSuccessListener {
+                        Log.d("Tag: CAM", "Saved downloadUrl as $it")
                         downloadUrl = it
+                        binding.editTextEventImage.setText("Your image was uploaded.")
                     }
             }
     }
@@ -357,4 +362,8 @@ class CreateEventDialogFragment : DialogFragment() {
             requireContext(),
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
+
+    private fun generateUniqueName(): String {
+        return UUID.randomUUID().toString()
+    }
 }
