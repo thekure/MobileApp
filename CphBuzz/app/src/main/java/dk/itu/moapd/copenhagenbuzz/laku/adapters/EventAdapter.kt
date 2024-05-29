@@ -67,6 +67,23 @@ class EventAdapter(
         setText(viewHolder, event)                  // Set text from Event
         setVisibility(viewHolder, event)            // Set visibility based on login status
         setListeners(viewHolder, event, position)   // Setup listeners for each button
+        checkFavorites(viewHolder, event)
+    }
+
+    private fun checkFavorites(viewHolder: ViewHolder, event: Event) {
+        with(viewHolder){
+            repository.isFavorite(event){ isFavorite ->
+                Log.d("Tag: EVENT ADAPTER", "Initial isFavorite value: $isFavorite")
+                favoriteCallback(isFavorite)
+                if (isFavorite) {
+                    Log.d("Tag: EVENT ADAPTER", "Removing event from favorites")
+                    favoriteBtn.setIconResource(R.drawable.baseline_favorite_24)
+                } else {
+                    Log.d("Tag: EVENT ADAPTER", "Creating favorite event")
+                    favoriteBtn.setIconResource(R.drawable.outline_favorite_border_24)
+                }
+            }
+        }
     }
 
     private fun loadImages(viewHolder: ViewHolder, event: Event) {
@@ -120,7 +137,7 @@ class EventAdapter(
             }
 
             favoriteBtn.setOnClickListener {
-                Log.d("Tag: EVENT ADAPTER", "Attempting to add to favorites")
+                Log.d("Tag: EVENT ADAPTER", "Favorite button clicked.")
                 coroutineScope.launch(Dispatchers.Main) {
                     repository.isFavorite(event) { isFavorite ->
                         Log.d("Tag: EVENT ADAPTER", "isFavorite value: $isFavorite")

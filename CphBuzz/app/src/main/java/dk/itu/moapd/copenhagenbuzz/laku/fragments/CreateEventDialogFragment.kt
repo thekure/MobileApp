@@ -364,7 +364,7 @@ class CreateEventDialogFragment : DialogFragment() {
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
 
-    fun generateUniqueName(): String {
+    private fun generateUniqueName(): String {
         return UUID.randomUUID().toString()
     }
 }

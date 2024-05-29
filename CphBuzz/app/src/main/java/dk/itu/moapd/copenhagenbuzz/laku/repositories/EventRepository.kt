@@ -171,7 +171,9 @@ class EventRepository {
                 .child(uid)
                 .get()
                 .addOnSuccessListener { result ->
-                    val isFavorite = result.children.any { it.key == event.userID }
+                    val isFavorite = result.children.any {
+                        it.key == event.eventID
+                    }
                     callback(isFavorite)
                 }
                 .addOnCanceledListener {
