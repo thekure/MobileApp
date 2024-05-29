@@ -1,6 +1,7 @@
 package dk.itu.moapd.copenhagenbuzz.laku.adapters
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
@@ -51,6 +52,7 @@ class EventAdapter(
         val deleteBtn: MaterialButton = view.findViewById(R.id.button_delete)
         val editBtn: MaterialButton = view.findViewById(R.id.button_edit)
         val infoBtn: MaterialButton = view.findViewById(R.id.button_info)
+        val shareBtn: MaterialButton = view.findViewById(R.id.button_share)
     }
 
     /**
@@ -159,6 +161,20 @@ class EventAdapter(
                 coroutineScope.launch(Dispatchers.Main) {
                     repository.deleteEvent(event)
                 }
+            }
+
+            shareBtn.setOnClickListener {
+                val sendIntent: Intent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(
+                        Intent.EXTRA_TEXT, "Join me at this great event! It's a ${event.typeString} at '${event.location}'. \n" +
+                            "Hope you can make it! It's planned at ${(event.dateString!!)}. \\n\" +" +
+                            "Check out the CopenhagenBuzz app for more info, or hit me back!")
+                    type = "text/plain"
+                }
+
+                val shareIntent = Intent.createChooser(sendIntent, "How do you wish to share?")
+                context?.startActivity(shareIntent)
             }
         }
     }

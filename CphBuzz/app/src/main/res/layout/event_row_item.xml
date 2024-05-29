@@ -67,7 +67,6 @@
                 android:id="@+id/guideline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="50dp"
                 android:orientation="vertical"
                 app:layout_constraintBottom_toTopOf="@id/item_image"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -161,9 +160,24 @@
                     android:layout_marginBottom="@dimen/margin_small_8"
                     android:text="@string/delete"
                     app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/button_share"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    android:visibility="gone"/>
+                    />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_share"
+                    style="?attr/materialIconButtonFilledStyle"
+                    android:layout_width="@dimen/btn_width_standard_88"
+                    android:layout_height="@dimen/btn_height_standard_48"
+                    android:layout_marginTop="@dimen/margin_tiny_4"
+                    android:layout_marginEnd="@dimen/margin_medium_16"
+                    android:layout_marginBottom="@dimen/margin_small_8"
+                    android:text="@string/share"
+                    app:layout_constraintStart_toEndOf="@id/button_delete"
+                    app:layout_constraintEnd_toStartOf="@id/button_edit"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_edit"
@@ -176,8 +190,9 @@
                     android:text="@string/edit"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/button_share"
                     app:layout_constraintEnd_toStartOf="@+id/button_info"
-                    android:visibility="gone"/>
+                    />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_info"
@@ -188,6 +203,7 @@
                     android:layout_marginEnd="@dimen/margin_medium_16"
                     android:layout_marginBottom="@dimen/margin_small_8"
                     android:text="@string/info"
+                    app:layout_constraintStart_toEndOf="@id/button_edit"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
