@@ -93,55 +93,6 @@ class MapsFragment : Fragment() {
     }
 
     /**
-     * Checks permissions
-     */
-    private fun checkPermission() =
-        ActivityCompat.checkSelfPermission(
-            requireContext(),
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
-    /**
-     * Creates a prompt for the user to give permission
-     */
-    private fun requestUserPermissions() {
-        if (!checkPermission())
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
-            )
-    }
-
-    private val serviceConnection = object : ServiceConnection {
-
-        /**
-         * When a connection has been made to the service, this is called.
-         * If there is an issue, the app might not receive a callback.
-         *
-         * @param name Component name of the connected service.
-         * @param service Service IBinder to make calls on.
-         */
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            val binder = service as LocationService.LocalBinder
-            locationService = binder.service
-
-            if (checkPermission()) {
-                locationService?.subscribeToLocationUpdates()
-            } else {
-                requestUserPermissions()
-            }
-        }
-
-        /**
-         * Disconnect callback
-         */
-        override fun onServiceDisconnected(name: ComponentName) {
-            locationService = null
-        }
-    }
-
-    /**
      * Inflates view after creation
      */
     override fun onCreateView(
@@ -199,6 +150,59 @@ class MapsFragment : Fragment() {
     }
 
     /**
+     * Creates a prompt for the user to give permission
+     */
+    private fun requestUserPermissions() {
+        if (!checkPermission())
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
+            )
+    }
+
+    /**
+     * Checks permissions
+     */
+    private fun checkPermission() =
+        ActivityCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+
+
+    private val serviceConnection = object : ServiceConnection {
+
+        /**
+         * When a connection has been made to the service, this is called.
+         * If there is an issue, the app might not receive a callback.
+         *
+         * @param name Component name of the connected service.
+         * @param service Service IBinder to make calls on.
+         */
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            val binder = service as LocationService.LocalBinder
+            locationService = binder.service
+
+            if (checkPermission()) {
+                locationService?.subscribeToLocationUpdates()
+            } else {
+                requestUserPermissions()
+            }
+        }
+
+        /**
+         * Disconnect callback
+         */
+        override fun onServiceDisconnected(name: ComponentName) {
+            locationService = null
+        }
+    }
+
+
+
+    /**
      * Receives broadcast location updates from the service.
      */
     private inner class LocationBroadcastReceiver : BroadcastReceiver() {
@@ -213,17 +217,6 @@ class MapsFragment : Fragment() {
             location?.let {
                 updateLocationDetails(it)
             }
-        }
-    }
-
-    /**
-     * Keeps invisible text fields on the map updated.
-     */
-    private fun updateLocationDetails(location: Location) {
-        with(binding) {
-            editTextLatitude.setText(location.latitude.toString())
-            editTextLongitude.setText(location.longitude.toString())
-            editTextAltitude.setText(location.altitude.toString())
         }
     }
 
@@ -267,6 +260,17 @@ class MapsFragment : Fragment() {
             googleMap.isMyLocationEnabled = true
         } else {
             requestUserPermissions()
+        }
+    }
+
+    /**
+     * Keeps invisible text fields on the map updated.
+     */
+    private fun updateLocationDetails(location: Location) {
+        with(binding) {
+            editTextLatitude.setText(location.latitude.toString())
+            editTextLongitude.setText(location.longitude.toString())
+            editTextAltitude.setText(location.altitude.toString())
         }
     }
 }
