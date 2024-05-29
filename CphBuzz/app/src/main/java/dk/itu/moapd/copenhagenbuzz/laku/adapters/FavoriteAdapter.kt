@@ -1,34 +1,30 @@
 package dk.itu.moapd.copenhagenbuzz.laku.adapters
 
-import android.annotation.SuppressLint
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.auth.FirebaseUser
+import com.firebase.ui.database.FirebaseRecyclerAdapter
+import com.firebase.ui.database.FirebaseRecyclerOptions
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.FavoriteRowItemBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import com.squareup.picasso.Picasso
-import dk.itu.moapd.copenhagenbuzz.laku.interfaces.FavoritedStatusProvider
-
-@SuppressLint("NotifyDataSetChanged")
+import dk.itu.moapd.copenhagenbuzz.laku.interfaces.FavoriteBtnListener
+import dk.itu.moapd.copenhagenbuzz.laku.repositories.EventRepository
 
 class FavoriteAdapter(
-    private var data: List<Event>,
-    private val favoritedStatusProvider: FavoritedStatusProvider,
-    private val user: FirebaseUser?
-): RecyclerView.Adapter<FavoriteAdapter.ViewHolder>() {
+    options: FirebaseRecyclerOptions<Event>,
+    private val onFavoriteBtnClicked: FavoriteBtnListener
+): FirebaseRecyclerAdapter<Event, FavoriteAdapter.ViewHolder>(options) {
 
-    companion object {
-        private val TAG = FavoriteAdapter::class.qualifiedName
-    }
     class ViewHolder(
         private val binding: FavoriteRowItemBinding,
-        private val favoritedListener: (Int) -> Unit
+        private val adapter: FavoriteAdapter,
+        private val onFavoriteBtnClicked: FavoriteBtnListener
     ): RecyclerView.ViewHolder(binding.root){
         init{
             binding.faveBtnFavorite.setOnClickListener {
-                favoritedListener.invoke(adapterPosition)
+                onFavoriteBtnClicked.onFavoriteBtnClicked(adapter, absoluteAdapterPosition)
             }
         }
         fun bind(event: Event) {
@@ -43,22 +39,17 @@ class FavoriteAdapter(
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): ViewHolder = FavoriteRowItemBinding
+    ): ViewHolder =
+        FavoriteRowItemBinding
         .inflate(LayoutInflater.from(parent.context), parent, false)
-        .let{binding -> ViewHolder(binding, favoritedStatusProvider.getFavoriteRemovedListener())}
+        .let{binding -> ViewHolder(binding, this, onFavoriteBtnClicked)}
 
     override fun onBindViewHolder(
         holder: ViewHolder,
-        position: Int
+        position: Int,
+        event: Event
     ) {
-        Log.d(TAG, "Populate an item at position: $position")
-        data[position].let(holder::bind)
-    }
-
-    override fun getItemCount() = data.size
-
-    fun refreshData(favorites: List<Event>){
-        data = favorites
-        notifyDataSetChanged()
+        Log.d("Tag: FAVORITE ADAPTER", "Populate an item at position: $position")
+        event.let(holder::bind)
     }
 }

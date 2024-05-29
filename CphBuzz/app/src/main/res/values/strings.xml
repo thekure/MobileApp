@@ -48,4 +48,14 @@
     <string name="edit_event">Edit Event</string>
     <string name="save">Save</string>
     <string name="event_unfavorite_button">Button that removes from favorites.</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+    <string name="altitude">Altitude</string>
+    <string name="event_info_title">Event Info</string>
+    <string name="delete">Delete</string>
+    <string name="switch_camera">Switch Camera</string>
+    <string name="capture_image">Capture</string>
+    <string name="image_viewer">Image Viewer</string>
+    <string name="upload_image">Upload Image</string>
+    <string name="take_picture">Take Picture</string>
 </resources>

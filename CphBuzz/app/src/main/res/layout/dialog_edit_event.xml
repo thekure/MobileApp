@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="@dimen/margin_medium_16"
-    tools:context=".fragments.CreateEventDialogFragment">
+    tools:context=".fragments.EditEventDialogFragment">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"

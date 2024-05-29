@@ -1,26 +1,33 @@
 package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import com.firebase.ui.database.FirebaseListOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+import dk.itu.moapd.copenhagenbuzz.laku.DATABASE_URL
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.adapters.EventAdapter
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.FragmentTimelineBinding
-import dk.itu.moapd.copenhagenbuzz.laku.interfaces.EventFavoriteStatusProvider
-import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
+import dk.itu.moapd.copenhagenbuzz.laku.interfaces.EventBtnListener
+import dk.itu.moapd.copenhagenbuzz.laku.models.Event
+import dk.itu.moapd.copenhagenbuzz.laku.repositories.EventRepository
 
-class TimelineFragment : Fragment() {
+class TimelineFragment : Fragment(), EventBtnListener {
     private var _binding: FragmentTimelineBinding? = null
-
+    private lateinit var _repo: EventRepository
+    private val db = Firebase.database(DATABASE_URL).reference
     private val binding
         get() = requireNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
         }
 
-    private lateinit var _model: DataViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,34 +43,50 @@ class TimelineFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _repo = EventRepository()
 
-        _model = ViewModelProvider(requireActivity())[DataViewModel::class.java]
-        val favoritedStatusProvider = EventFavoriteStatusProvider(_model)
-        _model.events.observe(viewLifecycleOwner){ events ->
-            val adapter = EventAdapter(
-                context = requireContext(),
-                resource = R.layout.event_row_item,
-                data = events,
-                onEditEventClicked = this::showEditEventDialog,
-                user = _model.getUser(),
-                favoritedStatusProvider = favoritedStatusProvider
+        Log.d("Tag: TIMELINE FRAGMENT", "Setting query. db ref: $db")
+
+        val query = db
+            .child("copenhagen_buzz")
+            .child("events")
+            .orderByChild("startDate")
+
+        Log.d("Tag: TIMELINE FRAGMENT", "Setting query. Full query: $db.copenhagen_buzz.events" )
+
+        val options = FirebaseListOptions.Builder<Event>()
+            .setLifecycleOwner(this)
+            .setLayout(R.layout.event_row_item)
+            .setQuery(query, Event::class.java)
+            .build()
+
+        val adapter = EventAdapter(
+            options = options,
+            context = context,
+            repository = _repo,
+            coroutineScope = viewLifecycleOwner.lifecycleScope,
+            user = FirebaseAuth.getInstance().currentUser,
+            onClickListener = this@TimelineFragment
             )
-            adapter.refreshData(events)
-            binding.listViewTimeline.adapter = adapter
-        }
+
+        adapter.setFavoriteCallback {  }
+        binding.listViewTimeline.adapter = adapter
     }
 
-    private fun showEditEventDialog(position: Int) {
-        CreateEventDialogFragment(true, position).apply {
+    override fun onEditEventClicked(event: Event, position: Int) {
+        EditEventDialogFragment(event).apply {
             isCancelable = true
         }.also { dialogFragment ->
             dialogFragment.show(childFragmentManager, "CreateEventDialogFragment")
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    override fun onInfoEventClicked(event: Event, position: Int) {
+        EventInfoDialogFragment(event).apply {
+            isCancelable = true
+        }.also { dialogFragment ->
+            dialogFragment.show(childFragmentManager, "EventInfoDialogFragment")
+        }
     }
 }
 

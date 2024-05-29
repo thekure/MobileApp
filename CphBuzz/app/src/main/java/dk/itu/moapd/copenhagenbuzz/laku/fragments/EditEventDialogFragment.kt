@@ -13,16 +13,15 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.ktx.storage
-import dk.itu.moapd.copenhagenbuzz.laku.BUCKET_URL
+import com.google.firebase.storage.FirebaseStorage
+import com.google.mlkit.vision.label.ImageLabeler
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.DialogCreateEventBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
@@ -32,17 +31,14 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/**
- * Handles dialog fragments for both "Create Event" and "Edit Event" requests.
- */
-class CreateEventDialogFragment : DialogFragment() {
+class EditEventDialogFragment(
+    private val event: Event
+) : DialogFragment() {
 
     private var _binding: DialogCreateEventBinding? = null
     private var startDateFromSelection: Long? = null
     private var endDateFromSelection:   Long? = null
-    private var imageUri: Uri? = null
-    private lateinit var downloadUrl: Uri
-    private lateinit var storage: StorageReference
+    private lateinit var storage: FirebaseStorage
     private lateinit var _repo: EventRepository
     private val binding
         get() = requireNotNull(_binding) {
@@ -61,9 +57,9 @@ class CreateEventDialogFragment : DialogFragment() {
         setupEventTypeDropdown()
         setDatePickerListener()
         setupImageButtons()
-        storage = Firebase.storage(BUCKET_URL).reference
 
-        return buildCreateEventDialog()
+        // Return appropriate dialog variant
+        return buildEditEventDialog(event)
     }
 
     override fun onDestroyView() {
@@ -72,74 +68,64 @@ class CreateEventDialogFragment : DialogFragment() {
     }
 
     /**
-     * Create and return a fresh create event dialog.
+     * Create and return an edit event dialog.
      */
-    private fun buildCreateEventDialog(): androidx.appcompat.app.AlertDialog{
-        // Remove this when done testing
-        with(binding){
-            editTextEventName.setText("TestEvent")
-            editTextEventLocation.setText("TestLocation")
-            editTextEventDate.setText("Wed, May 15 2024")
-            editTextEventDescription.setText("Test Description")
-            editTextEventImage.setText("https://picsum.photos/seed/290/400/194")
-            editTextEventLatitude.setText("55.659879")
-            editTextEventLongitude.setText("12.59149")
-        }
-        // Remove above binding block
+    private fun buildEditEventDialog(event: Event): androidx.appcompat.app.AlertDialog {
 
+        with(binding){
+            editTextEventName.setText(event.title)
+            editTextEventLocation.setText(event.location)
+            editTextEventDate.setText(event.dateString)
+            autoCompleteEventTypes.setText(event.typeString, false)
+            editTextEventDescription.setText(event.description)
+            editTextEventImage.setText(event.mainImage)
+            editTextEventLatitude.setText(event.latitude.toString())
+            editTextEventLongitude.setText(event.longitude.toString())
+        }
 
         return MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.create_event)
+            .setTitle(R.string.edit_event)
             .setView(binding.root)
-            .setPositiveButton(R.string.create, null)
-            .setNeutralButton("Cancel") { dialog, _ ->
+            .setPositiveButton(R.string.save, null)
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
             }
             .create().apply {
                 setOnShowListener {
                     getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                        if(createEventFromFields()) dismiss()
+                        if(editEventFromFields(event)) dismiss()
                     }
                 }
             }
     }
 
-
-
     /**
-     * Handler function for the add event button.
-     * - Creates new event if all fields have content.
+     * Handler function for the edit event button.
+     * - Edits existing event if all fields have content.
      * - Notifies user with a snack bar
      * - If fields are filled incorrectly, notifies user with a toast
      */
-    private fun createEventFromFields(): Boolean{
+    private fun editEventFromFields(event: Event): Boolean{
         with(binding) {
             // Only execute the following code when the user fills all fields
             if (checkInputValidity()) {
-                val event = Event(
-                    userID = FirebaseAuth.getInstance().currentUser?.uid,
-                    title = editTextEventName.text.toString().trim(),
-                    location = editTextEventLocation.text.toString().trim(),
-                    startDate = startDateFromSelection,
-                    endDate = endDateFromSelection,
-                    dateString = getDateString(startDateFromSelection, endDateFromSelection),
-                    typeString = autoCompleteEventTypes.text.toString(),
-                    description = editTextEventDescription.text.toString().trim(),
-                    mainImage = downloadUrl.toString(),
-                    latitude = editTextEventLatitude.text.toString().trim().toDouble(),
-                    longitude = editTextEventLongitude.text.toString().trim().toDouble()
-                )
-
+                event.title = editTextEventName.text.toString().trim()
+                event.location = editTextEventLocation.text.toString().trim()
+                event.startDate = startDateFromSelection
+                event.endDate = endDateFromSelection
+                event.dateString = getDateString(startDateFromSelection, endDateFromSelection)
+                event.typeString = autoCompleteEventTypes.text.toString()
+                event.description = editTextEventDescription.text.toString().trim()
+                event.mainImage = editTextEventImage.text.toString().trim()
                 event.type = getTypeIndex(event.typeString!!)
+                event.latitude = editTextEventLatitude.text.toString().trim().toDouble()
+                event.longitude = editTextEventLongitude.text.toString().trim().toDouble()
 
-                Log.d("Tag: CREATE EVENT DIALOG", "Event with userID ${event.userID} and title ${event.title} ready to be created.")
-                _repo.createEvent(event)
-                Log.d("Tag: CREATE EVENT DIALOG", "Return from repo create call.")
+                _repo.updateEvent(event)
                 hideKeyboard()
-                showToast("Event created.")
+                showToast("Event updated.")
                 return true
             } else {
-                Log.d("Tag: CREATE EVENT DIALOG", "Input not valid")
                 showToast("Fill out all fields. Have you tried scrolling?")
                 return false
             }
@@ -215,13 +201,13 @@ class CreateEventDialogFragment : DialogFragment() {
     private fun checkInputValidity(): Boolean =
         with(binding){
             editTextEventName.text.toString().isNotEmpty()          &&
-            editTextEventLocation.text.toString().isNotEmpty()      &&
-            editTextEventDate.text.toString().isNotEmpty()          &&
-            autoCompleteEventTypes.text.toString().isNotEmpty()     &&
-            editTextEventDescription.text.toString().isNotEmpty()   &&
-            editTextEventImage.text.toString().isNotEmpty()         &&
-            editTextEventLatitude.text.toString().isNotEmpty()      &&
-            editTextEventLongitude.text.toString().isNotEmpty()
+                    editTextEventLocation.text.toString().isNotEmpty()      &&
+                    editTextEventDate.text.toString().isNotEmpty()          &&
+                    autoCompleteEventTypes.text.toString().isNotEmpty()     &&
+                    editTextEventDescription.text.toString().isNotEmpty()   &&
+                    editTextEventImage.text.toString().isNotEmpty()         &&
+                    editTextEventLatitude.text.toString().isNotEmpty()      &&
+                    editTextEventLongitude.text.toString().isNotEmpty()
         }
 
     /**
@@ -244,7 +230,7 @@ class CreateEventDialogFragment : DialogFragment() {
      * Helper function to convert dates from long to string.
      */
     private fun getDateString(startDate: Long?, endDate: Long?): String{
-        if(startDate == null && endDate == null) return "No date"
+        if(startDate == null && endDate == null) return ""
         /**
          * Defines the wanted display format for the dates.
          * Currently set to: EEE, MMM dd yyyy.
@@ -279,6 +265,12 @@ class CreateEventDialogFragment : DialogFragment() {
 
 
 
+    private var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+    private var imageCapture: ImageCapture? = null
+    private var imageUri: Uri? = null
+    private lateinit var labeler : ImageLabeler
+
+
     companion object {
         private const val FILENAME_FORMAT = "yyyyMMdd_HHmmss"
     }
@@ -288,32 +280,29 @@ class CreateEventDialogFragment : DialogFragment() {
     ) { didTakePhoto: Boolean ->
         if(didTakePhoto && imageUri != null) {
             Log.d("Tag: CAM", "takePhoto")
-            uploadImageToBucket(imageUri!!)
+            // HANDLE SUCCESS HERE
         }
     }
 
-    private fun uploadImageToBucket(uri: Uri){
-        storage.child("images").putFile(uri)
-            .addOnSuccessListener {
-                storage.child("images").downloadUrl
-                    .addOnSuccessListener {
-                        downloadUrl = it
-                    }
-            }
+    private val pickPhotoFromGallery = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { photoUri ->
+        photoUri?.let {
+            Log.d("Tag: CAM", "pickPhotoFromGallery, imageUri: $imageUri")
+            imageUri = it
+        }
     }
 
     private fun setupImageButtons() {
         Log.d("Tag: CAM", "setupButtons")
-
-        binding.uploadBtn.setOnClickListener {
-            Log.d("Tag: CAM", "uploadOnClickListener")
-            pickPhotoFromGallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-        }
-
         binding.takePicBtn.setOnClickListener {
+
             if (checkPermission()){
                 try{
-                    val photoName = "IMG_${SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()).format(Date())}.JPG"
+                    val photoName = "IMG_${
+                        SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()).format(
+                            Date()
+                        )}.JPG"
                     val photoFile =
                         File(requireContext().applicationContext.filesDir, photoName)
                     Log.d("Tag: CAM", "Creating image file at ${photoFile.absolutePath}")
@@ -327,9 +316,9 @@ class CreateEventDialogFragment : DialogFragment() {
                     Log.d("Tag: CAM", "takePhoto.launch(${imageUri})")
                     takePhoto.launch(imageUri)
                 }
-                 catch (e: Exception){
-                     Log.d("Tag: CAM", "Encountered exception: $e")
-                     e.printStackTrace()
+                catch (e: Exception){
+                    Log.d("Tag: CAM", "Encountered exception: $e")
+                    e.printStackTrace()
                 }
             }
 
@@ -337,24 +326,28 @@ class CreateEventDialogFragment : DialogFragment() {
                 Log.d("Tag: CAM", "No permission")
             }
         }
-    }
 
-    private val pickPhotoFromGallery = registerForActivityResult(
-        ActivityResultContracts.PickVisualMedia()
-    ) { photoUri ->
-        photoUri?.let {
-            uploadImageToBucket(it)
+        binding.uploadBtn.setOnClickListener {
+            Log.d("Tag: CAM", "uploadOnClickListener")
+            pickPhotoFromGallery
+                .launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
+
+        binding.uploadBtn.isEnabled =
+            ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(requireContext())
     }
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { _ ->
+        // cameraPermissionResult(result)
     }
+
 
     private fun checkPermission() =
         ActivityCompat.checkSelfPermission(
             requireContext(),
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
+
 }
