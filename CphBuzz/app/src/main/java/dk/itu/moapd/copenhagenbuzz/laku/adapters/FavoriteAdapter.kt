@@ -10,6 +10,7 @@ import dk.itu.moapd.copenhagenbuzz.laku.databinding.FavoriteRowItemBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.interfaces.FavoriteBtnListener
+import dk.itu.moapd.copenhagenbuzz.laku.repositories.EventRepository
 
 class FavoriteAdapter(
     options: FirebaseRecyclerOptions<Event>,
@@ -48,7 +49,7 @@ class FavoriteAdapter(
         position: Int,
         event: Event
     ) {
-        Log.d("FAVORITE ADAPTER", "Populate an item at position: $position")
+        Log.d("Tag: FAVORITE ADAPTER", "Populate an item at position: $position")
         event.let(holder::bind)
     }
 }

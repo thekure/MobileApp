@@ -29,10 +29,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.inputmethod.InputMethodManager
 import androidx.core.view.WindowCompat
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -44,7 +42,6 @@ import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.ActivityMainBinding
 import dk.itu.moapd.copenhagenbuzz.laku.fragments.CreateEventDialogFragment
 import dk.itu.moapd.copenhagenbuzz.laku.fragments.UserInfoDialogFragment
-import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 
 /**
  * An activity class with methods to manage the main activity of the application.
@@ -62,14 +59,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var auth: FirebaseAuth
     private lateinit var _menu: Menu
-
-    /**
-     * A set of private constants used in this class.
-     * - This text was written by Fabricio Narcizo
-     */
-    companion object {
-        private val TAG = MainActivity::class.qualifiedName
-    }
 
 
     /**
@@ -104,13 +93,6 @@ class MainActivity : AppCompatActivity() {
         initNavMenuAndTopBar()
     }
 
-    /**
-     * Standard function for hiding the keyboard. Imported from java.
-     */
-    private fun hideKeyboard(){
-        val imm = getSystemService(InputMethodManager::class.java)
-        imm?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
-    }
 
     // ------------------------------------
     // All things navigation

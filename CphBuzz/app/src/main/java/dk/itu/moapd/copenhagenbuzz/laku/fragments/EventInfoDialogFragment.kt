@@ -5,20 +5,17 @@ package dk.itu.moapd.copenhagenbuzz.laku.fragments
 import android.app.Dialog
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.DialogEventInfoBinding
-import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
+import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 
 class EventInfoDialogFragment(
-    private val position: Int = -1
+    private val event: Event
 ) : DialogFragment() {
 
     private var _binding: DialogEventInfoBinding? = null
-    private lateinit var model: DataViewModel
 
     private val binding
         get() = requireNotNull(_binding) {
@@ -29,10 +26,6 @@ class EventInfoDialogFragment(
         super.onCreateDialog(savedInstanceState)
         // Inflate the view using view binding.
         _binding = DialogEventInfoBinding.inflate(layoutInflater)
-        model = ViewModelProvider(requireActivity())[DataViewModel::class.java]
-
-        // Get the current event.
-        val event = model.getEventAtIndex(position)
 
         // Populate the dialog view with user information.
         with(binding){

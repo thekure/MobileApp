@@ -44,7 +44,6 @@ class FavoritesFragment : Fragment(), FavoriteBtnListener {
         super.onViewCreated(view, savedInstanceState)
 
         _repo = EventRepository()
-        db.keepSynced(true)
 
         FirebaseAuth.getInstance().currentUser?.let { user ->
             val query = db

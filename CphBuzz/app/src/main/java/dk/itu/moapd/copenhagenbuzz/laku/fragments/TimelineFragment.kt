@@ -1,6 +1,7 @@
 package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,10 +45,14 @@ class TimelineFragment : Fragment(), EventBtnListener {
         super.onViewCreated(view, savedInstanceState)
         _repo = EventRepository()
 
+        Log.d("Tag: TIMELINE FRAGMENT", "Setting query. db ref: $db")
+
         val query = db
             .child("copenhagen_buzz")
             .child("events")
             .orderByChild("startDate")
+
+        Log.d("Tag: TIMELINE FRAGMENT", "Setting query. Full query: $db.copenhagen_buzz.events" )
 
         val options = FirebaseListOptions.Builder<Event>()
             .setLifecycleOwner(this)
@@ -69,7 +74,7 @@ class TimelineFragment : Fragment(), EventBtnListener {
     }
 
     override fun onEditEventClicked(event: Event, position: Int) {
-        CreateEventDialogFragment(true, position).apply {
+        EditEventDialogFragment(event).apply {
             isCancelable = true
         }.also { dialogFragment ->
             dialogFragment.show(childFragmentManager, "CreateEventDialogFragment")
@@ -77,7 +82,7 @@ class TimelineFragment : Fragment(), EventBtnListener {
     }
 
     override fun onInfoEventClicked(event: Event, position: Int) {
-        EventInfoDialogFragment(position).apply {
+        EventInfoDialogFragment(event).apply {
             isCancelable = true
         }.also { dialogFragment ->
             dialogFragment.show(childFragmentManager, "EventInfoDialogFragment")

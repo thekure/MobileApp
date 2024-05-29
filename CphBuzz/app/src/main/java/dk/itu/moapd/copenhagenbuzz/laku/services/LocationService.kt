@@ -6,8 +6,6 @@ import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -15,7 +13,6 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import dk.itu.moapd.copenhagenbuzz.laku.models.DataViewModel
 
 class LocationService : Service() {
 

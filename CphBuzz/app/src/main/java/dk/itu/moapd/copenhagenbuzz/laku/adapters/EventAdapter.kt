@@ -9,7 +9,11 @@ import com.firebase.ui.database.FirebaseListAdapter
 import com.firebase.ui.database.FirebaseListOptions
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.storage
 import com.squareup.picasso.Picasso
+import dk.itu.moapd.copenhagenbuzz.laku.BUCKET_URL
 import dk.itu.moapd.copenhagenbuzz.laku.R
 import dk.itu.moapd.copenhagenbuzz.laku.interfaces.EventBtnListener
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
@@ -29,6 +33,7 @@ class EventAdapter(
 
 ): FirebaseListAdapter<Event>(options){
     private lateinit var favoriteCallback: (Boolean) -> Unit
+
 
     fun setFavoriteCallback(callback: (Boolean) -> Unit) {
         favoriteCallback = callback
@@ -56,6 +61,8 @@ class EventAdapter(
     override fun populateView(v: View, event: Event, position: Int) {
         val viewHolder = ViewHolder(v)
 
+        Log.d("Tag: EventAdapter", "Populating view for event: $event at position: $position")
+
         loadImages(viewHolder, event)               // Load images using Picasso
         setText(viewHolder, event)                  // Set text from Event
         setVisibility(viewHolder, event)            // Set visibility based on login status
@@ -72,7 +79,7 @@ class EventAdapter(
     }
 
     private fun setText(viewHolder: ViewHolder, event: Event) {
-        Log.d("EVENT ADAPTER", "Set Text")
+        Log.d("Tag: EVENT ADAPTER", "Set Text")
         with(viewHolder){
             title.text = event.title
             type.text = event.typeString
@@ -83,7 +90,7 @@ class EventAdapter(
     }
 
     private fun setVisibility(viewHolder: ViewHolder, event: Event) {
-        Log.d("EVENT ADAPTER", "Set Visibility")
+        Log.d("Tag: EVENT ADAPTER", "Set Visibility")
         with(viewHolder){
             // Edit Button
             if(event.userID == user?.uid){
@@ -102,27 +109,28 @@ class EventAdapter(
     }
 
     private fun setListeners(viewHolder: ViewHolder, event: Event,position: Int) {
-        Log.d("EVENT ADAPTER", "Set Listeners")
+        Log.d("Tag: EVENT ADAPTER", "Set Listeners")
         with(viewHolder){
-            Log.d("EVENT ADAPTER", "Set editBtn Listener")
             editBtn.setOnClickListener {
                 onClickListener.onEditEventClicked(event, position)
             }
 
-            Log.d("EVENT ADAPTER", "Set infoBtn Listener")
             infoBtn.setOnClickListener {
                 onClickListener.onInfoEventClicked(event, position)
             }
 
-            Log.d("EVENT ADAPTER", "Set favoriteBtn Listener")
             favoriteBtn.setOnClickListener {
+                Log.d("Tag: EVENT ADAPTER", "Attempting to add to favorites")
                 coroutineScope.launch(Dispatchers.Main) {
                     repository.isFavorite(event) { isFavorite ->
+                        Log.d("Tag: EVENT ADAPTER", "isFavorite value: $isFavorite")
                         favoriteCallback(isFavorite)
                         if (isFavorite) {
+                            Log.d("Tag: EVENT ADAPTER", "Removing event from favorites")
                             repository.removeFavorite(event)
                             favoriteBtn.setIconResource(R.drawable.outline_favorite_border_24)
                         } else {
+                            Log.d("Tag: EVENT ADAPTER", "Creating favorite event")
                             repository.createFavorite(event)
                             favoriteBtn.setIconResource(R.drawable.baseline_favorite_24)
                         }
@@ -130,8 +138,7 @@ class EventAdapter(
                 }
             }
 
-            Log.d("EVENT ADAPTER", "Set deleteBtn Listener")
-            favoriteBtn.setOnClickListener {
+            deleteBtn.setOnClickListener {
                 coroutineScope.launch(Dispatchers.Main) {
                     repository.deleteEvent(event)
                 }
