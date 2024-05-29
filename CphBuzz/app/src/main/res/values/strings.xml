@@ -59,4 +59,8 @@
     <string name="upload_image">Upload Image</string>
     <string name="take_picture">Take Picture</string>
     <string name="upload_image_please">Please, take or upload an image.</string>
+    <string name="share">Share</string>
+    <string name="weather">Weather at location</string>
+    <string name="temperature_unavailable">Loading temperature...</string>
+    <string name="temperature_text">Current Temperature: %.2f°C</string>
 </resources>

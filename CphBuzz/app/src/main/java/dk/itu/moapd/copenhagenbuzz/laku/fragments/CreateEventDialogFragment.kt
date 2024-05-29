@@ -1,3 +1,28 @@
+/**
+ * MIT License
+ *
+ * Copyright (c) [2024] [Laurits Kure]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
 import android.Manifest
@@ -35,7 +60,8 @@ import java.util.Locale
 import java.util.UUID
 
 /**
- * Handles dialog fragments for both "Create Event" and "Edit Event" requests.
+ * Handles dialog fragments for "Create Event" requests.
+ * Lots of code duplication with EditEventDialog. Should be moved to inherit from abstract class.
  */
 class CreateEventDialogFragment : DialogFragment() {
 
@@ -51,6 +77,11 @@ class CreateEventDialogFragment : DialogFragment() {
             "Cannot access binding because it is null. Is the view visible?"
         }
 
+    /**
+     * Initialises dialog when it is created
+    * @param savedInstanceState If the activity is being re-initialized after previously being shut
+    *      * down then this Bundle contains the data it most recently supplied in `onSaveInstanceState()`.
+    *      */
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         super.onCreateDialog(savedInstanceState)
         _binding = DialogCreateEventBinding.inflate(layoutInflater)
@@ -62,19 +93,15 @@ class CreateEventDialogFragment : DialogFragment() {
 
         setupEventTypeDropdown()
         setDatePickerListener()
-        setupImageButtons()
+        setImageButtons()
         storage = Firebase.storage(BUCKET_URL).reference
 
         return buildCreateEventDialog()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
     /**
      * Create and return a fresh create event dialog.
+     * Currently holds dummy data for easier development.
      */
     private fun buildCreateEventDialog(): androidx.appcompat.app.AlertDialog{
         // Remove this when done testing
@@ -261,6 +288,10 @@ class CreateEventDialogFragment : DialogFragment() {
         return "$startDateAsString - $endDateAsString"
     }
 
+    /**
+     * Standard toast method
+     * @param message Message to display
+     */
     private fun showToast(message: String){
         Toast.makeText(
             requireContext(),
@@ -269,6 +300,9 @@ class CreateEventDialogFragment : DialogFragment() {
         ).show()
     }
 
+    /**
+     * Standard method to hide keyboard
+     */
     private fun hideKeyboard() {
         val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         val currentFocusedView = requireActivity().currentFocus
@@ -277,12 +311,21 @@ class CreateEventDialogFragment : DialogFragment() {
         }
     }
 
+    /* ------------------------------------------------------
+        ALL THINGS RELATED TO CAMERA AND IMAGES BELOW HERE
+       ------------------------------------------------------ */
 
 
+    /**
+     * Filename format for the image file name
+     */
     companion object {
         private const val FILENAME_FORMAT = "yyyyMMdd_HHmmss"
     }
 
+    /**
+     * Registers activity result for the takePhoto action.
+     */
     private val takePhoto = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { didTakePhoto: Boolean ->
@@ -292,6 +335,10 @@ class CreateEventDialogFragment : DialogFragment() {
         }
     }
 
+    /**
+     * Uploads image to firebase bucket
+     * @param uri The local file path to the image file
+     */
     @SuppressLint("SetTextI18n")
     private fun uploadImageToBucket(uri: Uri){
         val name = generateUniqueName()
@@ -307,12 +354,15 @@ class CreateEventDialogFragment : DialogFragment() {
             }
     }
 
-    private fun setupImageButtons() {
+    /**
+     * Sets listeners for upload and take picture buttons
+     */
+    private fun setImageButtons() {
         Log.d("Tag: CAM", "setupButtons")
 
         binding.uploadBtn.setOnClickListener {
             Log.d("Tag: CAM", "uploadOnClickListener")
-            pickPhotoFromGallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            selectFromGallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
 
         binding.takePicBtn.setOnClickListener {
@@ -344,7 +394,10 @@ class CreateEventDialogFragment : DialogFragment() {
         }
     }
 
-    private val pickPhotoFromGallery = registerForActivityResult(
+    /**
+     * Registers activity result for the image picker action
+     */
+    private val selectFromGallery = registerForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     ) { photoUri ->
         photoUri?.let {
@@ -352,18 +405,35 @@ class CreateEventDialogFragment : DialogFragment() {
         }
     }
 
+    /**
+     * Registers activity result for the permission request activity
+     */
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { _ ->
     }
 
+    /**
+     * Helper function to check if permissions are good
+     */
     private fun checkPermission() =
         ActivityCompat.checkSelfPermission(
             requireContext(),
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
 
+    /**
+     * Helper function to generate a unique name for the images that are uploaded to bucket.
+     */
     private fun generateUniqueName(): String {
         return UUID.randomUUID().toString()
+    }
+
+    /**
+     * Nullifies binding on view destruction.
+     */
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

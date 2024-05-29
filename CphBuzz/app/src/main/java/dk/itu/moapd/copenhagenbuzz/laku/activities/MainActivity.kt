@@ -49,11 +49,8 @@ import dk.itu.moapd.copenhagenbuzz.laku.fragments.UserInfoDialogFragment
 class MainActivity : AppCompatActivity() {
 
     /**
-     * View binding is a feature that allows you to more easily write code that interacts with
-     * views. Once view binding is enabled in a module, it generates a binding class for each XML
-     * layout file present in that module. An instance of a binding class contains direct references
-     * to all views that have an ID in the corresponding layout.
-     * - This text was written by Fabricio Narcizo
+     * View binding allows writing code easier. Binding classes for each XML layout file in
+     * the module are generated.
      */
     private lateinit var binding: ActivityMainBinding
     private lateinit var appBarConfiguration: AppBarConfiguration
@@ -62,23 +59,11 @@ class MainActivity : AppCompatActivity() {
 
 
     /**
-     * Called when the activity is starting. This is where most initialization should go: calling
-     * `setContentView(int)` to inflate the activity's UI, using `findViewById()` to
-     * programmatically interact with widgets in the UI, calling
-     * `managedQuery(android.net.Uri, String[], String, String[], String)` to retrieve cursors for
-     * data being displayed, etc.
-     *
-     * You can call `finish()` from within this function, in which case `onDestroy()` will be
-     * immediately called after `onCreate()` without any of the rest of the activity lifecycle
-     * (`onStart()`, `onResume()`, onPause()`, etc) executing.
-     *
-     * <em>Derived classes must call through to the super class's implementation of this method. If
-     * they do not, an exception will be thrown.</em>
+     * Called when the activity is starting.
+     * For initialization.
      *
      * @param savedInstanceState If the activity is being re-initialized after previously being shut
      * down then this Bundle contains the data it most recently supplied in `onSaveInstanceState()`.
-     * <b><i>Note: Otherwise it is null.</i></b>
-     * - This text was written by Fabricio Narcizo
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window,false)
@@ -141,6 +126,7 @@ class MainActivity : AppCompatActivity() {
     // ------------------------------------
     /**
      * Initializes _menu and inflates the top_app_bar
+     * @param menu The menu needed to inflate the menuInflater.
      */
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         _menu = menu
@@ -150,6 +136,7 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Updates what options should be visible every time the menu is accessed.
+     * @param menu The menu that is updated.
      */
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         updateOptionsMenu()
@@ -158,6 +145,7 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Action listeners for each top menu option.
+     * @param item The menu item that was selected by the user.
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         // Handle top app bar menu item clicks.

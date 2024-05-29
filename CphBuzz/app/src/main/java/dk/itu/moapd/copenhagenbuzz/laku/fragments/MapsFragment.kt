@@ -1,3 +1,28 @@
+/**
+ * MIT License
+ *
+ * Copyright (c) [2024] [Laurits Kure]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
 import android.Manifest
@@ -37,20 +62,26 @@ import dk.itu.moapd.copenhagenbuzz.laku.databinding.FragmentMapsBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import dk.itu.moapd.copenhagenbuzz.laku.services.LocationService
 
+/**
+ * Fragment that holds Google Maps implementation
+ */
 class MapsFragment : Fragment() {
     private var _binding: FragmentMapsBinding? = null
+    private var locationService: LocationService? = null
+    private lateinit var locationBroadcastReceiver: LocationBroadcastReceiver
 
     private val binding
         get() = requireNotNull(_binding) {
             "Cannot access binding because it is null. Is the view visible?"
         }
 
-    private var locationService: LocationService? = null
     companion object {
         const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
     }
-    private lateinit var locationBroadcastReceiver: LocationBroadcastReceiver
 
+    /**
+     * Creates intent to bind location service to the fragment.
+     */
     override fun onStart() {
         super.onStart()
 
@@ -61,54 +92,9 @@ class MapsFragment : Fragment() {
         }
     }
 
-    private fun checkPermission() =
-        ActivityCompat.checkSelfPermission(
-            requireContext(),
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
     /**
-     * Creates a prompt for the user to give permission
+     * Inflates view after creation
      */
-    private fun requestUserPermissions() {
-        if (!checkPermission())
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
-            )
-    }
-
-    private val serviceConnection = object : ServiceConnection {
-
-        /**
-         * Called when a connection to the Service has been established, with the
-         * `android.os.IBinder` of the communication channel to the Service.
-         *
-         * If the system has started to bind your client app to a service, it's possible that your
-         * app will never receive this callback. Your app won't receive a callback if there's an
-         * issue with the service, such as the service crashing while being created.
-         *
-         * @param name The concrete component name of the service that has been connected.
-         * @param service The IBinder of the Service's communication channel, which you can now make
-         *      calls on.
-         */
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            val binder = service as LocationService.LocalBinder
-            locationService = binder.service
-
-            if (checkPermission()) {
-                locationService?.subscribeToLocationUpdates()
-            } else {
-                requestUserPermissions()
-            }
-        }
-
-        override fun onServiceDisconnected(name: ComponentName) {
-            locationService = null
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -116,6 +102,9 @@ class MapsFragment : Fragment() {
         _binding = it
     }.root
 
+    /**
+     * Binds fragment to map
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         locationBroadcastReceiver = LocationBroadcastReceiver()
@@ -131,11 +120,17 @@ class MapsFragment : Fragment() {
         }
     }
 
+    /**
+     * Makes sure service is unregistered on pause.
+     */
     override fun onPause() {
         super.onPause()
         LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(locationBroadcastReceiver)
     }
 
+    /**
+     * Makes sure service is registered again when needed.
+     */
     override fun onResume() {
         super.onResume()
 
@@ -146,11 +141,70 @@ class MapsFragment : Fragment() {
         )
     }
 
+    /**
+     * Nullifies binding on view destruction
+     */
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
+    /**
+     * Creates a prompt for the user to give permission
+     */
+    private fun requestUserPermissions() {
+        if (!checkPermission())
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
+            )
+    }
+
+    /**
+     * Checks permissions
+     */
+    private fun checkPermission() =
+        ActivityCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+
+
+    private val serviceConnection = object : ServiceConnection {
+
+        /**
+         * When a connection has been made to the service, this is called.
+         * If there is an issue, the app might not receive a callback.
+         *
+         * @param name Component name of the connected service.
+         * @param service Service IBinder to make calls on.
+         */
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            val binder = service as LocationService.LocalBinder
+            locationService = binder.service
+
+            if (checkPermission()) {
+                locationService?.subscribeToLocationUpdates()
+            } else {
+                requestUserPermissions()
+            }
+        }
+
+        /**
+         * Disconnect callback
+         */
+        override fun onServiceDisconnected(name: ComponentName) {
+            locationService = null
+        }
+    }
+
+
+
+    /**
+     * Receives broadcast location updates from the service.
+     */
     private inner class LocationBroadcastReceiver : BroadcastReceiver() {
         @RequiresApi(Build.VERSION_CODES.TIRAMISU)
         override fun onReceive(context: Context, intent: Intent) {
@@ -163,14 +217,6 @@ class MapsFragment : Fragment() {
             location?.let {
                 updateLocationDetails(it)
             }
-        }
-    }
-
-    private fun updateLocationDetails(location: Location) {
-        with(binding) {
-            editTextLatitude.setText(location.latitude.toString())
-            editTextLongitude.setText(location.longitude.toString())
-            editTextAltitude.setText(location.altitude.toString())
         }
     }
 
@@ -214,6 +260,17 @@ class MapsFragment : Fragment() {
             googleMap.isMyLocationEnabled = true
         } else {
             requestUserPermissions()
+        }
+    }
+
+    /**
+     * Keeps invisible text fields on the map updated.
+     */
+    private fun updateLocationDetails(location: Location) {
+        with(binding) {
+            editTextLatitude.setText(location.latitude.toString())
+            editTextLongitude.setText(location.longitude.toString())
+            editTextAltitude.setText(location.altitude.toString())
         }
     }
 }

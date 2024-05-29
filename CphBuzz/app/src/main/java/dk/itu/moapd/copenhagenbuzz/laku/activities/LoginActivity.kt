@@ -38,17 +38,34 @@ import dk.itu.moapd.copenhagenbuzz.laku.R
  * An activity class with methods to manage logging in to the application.
  */
 class LoginActivity : AppCompatActivity() {
+    /**
+     * This object launches a new activity and receives back some result data.
+     */
     private val signInLauncher = registerForActivityResult(
             FirebaseAuthUIActivityResultContract()
         ) { result ->
         onSignInResult(result)
     }
 
+    /**
+     * Called when the activity is starting.
+     * For initialization. Calls a method that creates sign-in intent.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being shut
+     * down then this Bundle contains the data it most recently supplied in `onSaveInstanceState()`.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         createSignInIntent()
     }
 
+    /**
+     * This method uses FirebaseUI to create a login activity with four sign-in/sign-up options,
+     * (1) by e-mail
+     * (2) by phone number
+     * (3) by Google account.
+     * (4) as guest (anonymous)
+     */
     private fun createSignInIntent() {
         // Choose authentication providers.
         val providers = arrayListOf(
@@ -73,6 +90,15 @@ class LoginActivity : AppCompatActivity() {
         signInLauncher.launch(signInIntent)
     }
 
+    /**
+     * When the second activity finishes it returns a result to this activity. If the user
+     * signs into the application correctly, we redirect the user to the main activity of
+     * the application.
+     *
+     * @param result Describes that the caller can launch authentication flow with an
+     *      `Intent` and is guaranteed to receive a `FirebaseAuthUIAuthenticationResult` as
+     *      result.
+     */
     private fun onSignInResult(
         result: FirebaseAuthUIAuthenticationResult
     ) {
@@ -88,6 +114,10 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * In the case of a successful login, this method starts the main activity and the Firebase
+     * Authentication application.
+     */
     private fun startMainActivity() {
         Intent(this, MainActivity::class.java).apply {
             startActivity(this)
@@ -96,7 +126,9 @@ class LoginActivity : AppCompatActivity() {
     }
 
     /**
-     * Standard snackbar message, copied directly from course GitHub
+     * Standard snackbar method.
+     *
+     * @param message The string that will be displayed to the user.
      */
     private fun showSnackBar(message: String) {
         Snackbar.make(

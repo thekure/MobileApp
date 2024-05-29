@@ -1,3 +1,28 @@
+/**
+ * MIT License
+ *
+ * Copyright (c) [2024] [Laurits Kure]
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package dk.itu.moapd.copenhagenbuzz.laku.fragments
 
 import android.Manifest
@@ -14,22 +39,16 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
-import androidx.core.view.get
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
-import com.google.mlkit.vision.label.ImageLabeler
 import dk.itu.moapd.copenhagenbuzz.laku.BUCKET_URL
 import dk.itu.moapd.copenhagenbuzz.laku.R
-import dk.itu.moapd.copenhagenbuzz.laku.databinding.DialogCreateEventBinding
 import dk.itu.moapd.copenhagenbuzz.laku.databinding.DialogEditEventBinding
 import dk.itu.moapd.copenhagenbuzz.laku.models.Event
 import dk.itu.moapd.copenhagenbuzz.laku.repositories.EventRepository
@@ -39,6 +58,10 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
+/**
+ * Handles dialog fragments for "Edit Event" requests.
+ * Lots of code duplication with CreateEventDialog. Should be moved to inherit from abstract class.
+ */
 class EditEventDialogFragment(
     private val event: Event
 ) : DialogFragment() {
@@ -56,6 +79,11 @@ class EditEventDialogFragment(
             "Cannot access binding because it is null. Is the view visible?"
         }
 
+    /**
+     * Initialises dialog when it is created
+     * @param savedInstanceState If the activity is being re-initialized after previously being shut
+     *      * down then this Bundle contains the data it most recently supplied in `onSaveInstanceState()`.
+     *      */
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         super.onCreateDialog(savedInstanceState)
         _binding = DialogEditEventBinding.inflate(layoutInflater)
@@ -68,13 +96,16 @@ class EditEventDialogFragment(
 
         setupEventTypeDropdown()
         setDatePickerListener()
-        setupImageButtons()
+        setImageButtons()
         storage = Firebase.storage(BUCKET_URL).reference
 
         // Return appropriate dialog variant
         return buildEditEventDialog(event)
     }
 
+    /**
+     * Nullifies binding on view destruction.
+     */
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -82,6 +113,9 @@ class EditEventDialogFragment(
 
     /**
      * Create and return an edit event dialog.
+     * Populates fields with data from the database.
+     *
+     * @param event Object that holds the data available in the database
      */
     @SuppressLint("SetTextI18n")
     private fun buildEditEventDialog(event: Event): androidx.appcompat.app.AlertDialog {
@@ -271,6 +305,10 @@ class EditEventDialogFragment(
         return "$startDateAsString - $endDateAsString"
     }
 
+    /**
+     * Standard toast method
+     * @param message Message to display
+     */
     private fun showToast(message: String){
         Toast.makeText(
             requireContext(),
@@ -279,6 +317,9 @@ class EditEventDialogFragment(
         ).show()
     }
 
+    /**
+     * Standard method to hide keyboard
+     */
     private fun hideKeyboard() {
         val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         val currentFocusedView = requireActivity().currentFocus
@@ -288,10 +329,16 @@ class EditEventDialogFragment(
     }
 
 
+    /**
+     * Filename format for the image file name
+     */
     companion object {
         private const val FILENAME_FORMAT = "yyyyMMdd_HHmmss"
     }
 
+    /**
+     * Registers activity result for the takePhoto action.
+     */
     private val takePhoto = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { didTakePhoto: Boolean ->
@@ -301,6 +348,10 @@ class EditEventDialogFragment(
         }
     }
 
+    /**
+     * Uploads image to firebase bucket
+     * @param uri The local file path to the image file
+     */
     @SuppressLint("SetTextI18n")
     private fun uploadImageToBucket(uri: Uri){
         val name = generateUniqueName()
@@ -317,12 +368,15 @@ class EditEventDialogFragment(
             }
     }
 
-    private fun setupImageButtons() {
+    /**
+     * Sets listeners for upload and take picture buttons
+     */
+    private fun setImageButtons() {
         Log.d("Tag: CAM", "setupButtons")
 
         binding.uploadBtn.setOnClickListener {
             Log.d("Tag: CAM", "uploadOnClickListener")
-            pickPhotoFromGallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            selectFromGallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
 
         binding.takePicBtn.setOnClickListener {
@@ -354,7 +408,10 @@ class EditEventDialogFragment(
         }
     }
 
-    private val pickPhotoFromGallery = registerForActivityResult(
+    /**
+     * Registers activity result for the image picker action
+     */
+    private val selectFromGallery = registerForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     ) { photoUri ->
         photoUri?.let {
@@ -362,17 +419,26 @@ class EditEventDialogFragment(
         }
     }
 
+    /**
+     * Registers activity result for the permission request activity
+     */
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { _ ->
     }
 
+    /**
+     * Helper function to check if permissions are good
+     */
     private fun checkPermission() =
         ActivityCompat.checkSelfPermission(
             requireContext(),
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
 
+    /**
+     * Helper function to generate a unique name for the images that are uploaded to bucket.
+     */
     private fun generateUniqueName(): String {
         return UUID.randomUUID().toString()
     }
