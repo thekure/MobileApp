@@ -81,7 +81,6 @@ class CreateEventDialogFragment : DialogFragment() {
         with(binding){
             editTextEventName.setText("TestEvent")
             editTextEventLocation.setText("TestLocation")
-            editTextEventDate.setText("Wed, May 15 2024")
             editTextEventDescription.setText("Test Description")
             editTextEventLatitude.setText("55.659879")
             editTextEventLongitude.setText("12.59149")

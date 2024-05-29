@@ -18,6 +18,7 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.get
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -126,12 +127,17 @@ class EditEventDialogFragment(
                 event.location = editTextEventLocation.text.toString().trim()
                 event.startDate = event.startDate
                 event.endDate = event.endDate
-                event.dateString = getDateString(event.startDate, event.endDate)
                 event.typeString = autoCompleteEventTypes.text.toString()
                 event.description = editTextEventDescription.text.toString().trim()
                 event.type = getTypeIndex(event.typeString!!)
                 event.latitude = editTextEventLatitude.text.toString().trim().toDouble()
                 event.longitude = editTextEventLongitude.text.toString().trim().toDouble()
+
+                if(startDateFromSelection == null){
+                    event.dateString = getDateString(event.startDate, event.endDate)
+                } else {
+                    event.dateString = getDateString(startDateFromSelection, endDateFromSelection)
+                }
 
                 if(imageUpdated){
                     event.mainImage = downloadUrl.toString()
