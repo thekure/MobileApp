@@ -245,7 +245,7 @@ class EventAdapter(
             }
 
             shareBtn.setOnClickListener {
-                val sendIntent: Intent = Intent().apply {
+                val intentToSend: Intent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(
                         Intent.EXTRA_TEXT, "Join me at this great event! It's a ${event.typeString} at '${event.location}'. \n" +
@@ -254,8 +254,8 @@ class EventAdapter(
                     type = "text/plain"
                 }
 
-                val shareIntent = Intent.createChooser(sendIntent, "How do you wish to share?")
-                context?.startActivity(shareIntent)
+                val intentToShare = Intent.createChooser(intentToSend, "How do you wish to share?")
+                context?.startActivity(intentToShare)
             }
         }
     }
